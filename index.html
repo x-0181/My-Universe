@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05060d">
 <title>Our Little Universe</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --space:#05060d; --ink:#f4ece6; --dim:#b9aea6; --faint:#7d746f;
@@ -79,51 +78,136 @@ body[data-view="home"] .veil{background:radial-gradient(ellipse at 50% 38%,rgba(
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:var(--dim);padding:44px 18px;border:1px dashed var(--line);border-radius:18px;background:var(--glass)}
 .empty b{display:block;font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--ink);margin-bottom:4px}
+.fab{position:fixed;z-index:25;right:max(16px,calc(50% - 364px));bottom:calc(env(safe-area-inset-bottom) + 86px);width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;
+  font-size:28px;line-height:1;color:#1a0c05;background:linear-gradient(135deg,var(--gold),var(--ember));box-shadow:0 6px 28px rgba(255,106,43,.5)}
+body[data-view="home"] .fab{display:none}
 
 /* ---------- nav ---------- */
 .nav{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 12px);display:flex;gap:2px;padding:6px;
   border-radius:22px;background:rgba(14,12,20,.78);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:min(94vw,460px)}
-.nav button{flex:1 1 0;min-width:0;border:none;background:none;color:var(--faint);font:inherit;font-size:.7rem;padding:7px 2px 5px;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
-.nav button i{display:block;height:22px;line-height:22px;overflow:visible;font-style:normal;font-size:18px}
-.nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.nav button{flex:1;border:none;background:none;color:var(--faint);font:inherit;font-size:.7rem;padding:7px 0 5px;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+.nav button i{font-style:normal;font-size:18px}
 .nav button.on{color:var(--gold);background:rgba(255,160,110,.12)}
-.nav button.write{background:none;color:var(--faint);font-weight:400}
-.nav button.write i{display:flex;align-items:center;justify-content:center;font-size:16px}
-.nav button.write svg{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.nav button.write:active{background:rgba(255,160,110,.12)}
-@media(max-width:380px){.nav button{font-size:.62rem}.nav button i{font-size:16px}}
 
 /* ---------- modal / forms ---------- */
 .modal-bg{position:fixed;inset:0;z-index:50;background:rgba(3,3,8,.72);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);animation:fade .2s}
 @keyframes fade{from{opacity:0}}
-.modal{position:relative;width:min(460px,100%);max-height:78svh;transition:width .25s,max-height .25s;overflow:auto;background:#0f0c16;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom) + 22px);animation:up .25s}
+.modal{position:relative;width:min(460px,100%);max-height:72svh;transition:width .25s,max-height .25s;overflow:auto;background:#0f0c16;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom) + 22px);animation:up .25s}
 @keyframes up{from{transform:translateY(30px);opacity:0}}
 @media(min-width:700px){.modal-bg{align-items:center}.modal{border-radius:24px}}
-.modal h3{margin:0 0 12px;padding-right:44px;font-family:var(--serif);font-weight:400;font-size:1.35rem}
-.expand{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--glass-2);color:var(--ink);font-size:17px;cursor:pointer}
-.modal.big{width:min(900px,100%);max-height:96svh}
-.modal.big .f textarea{min-height:46svh}
+.modal h3{margin:0 0 12px;font-family:var(--serif);font-weight:400;font-size:1.6rem}
 .modal .row{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.modal .row .grow{margin-right:auto}
 label.f{display:block;margin-top:12px;font-size:.8rem;color:var(--dim);font-family:var(--mono)}
-.f input,.f textarea,.f select{display:block;width:100%;margin-top:5px;font:inherit;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:11px 12px;outline:none}
-.f textarea{resize:vertical;min-height:96px;line-height:1.6}
-.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--ember);box-shadow:0 0 0 3px rgba(255,106,43,.18)}
+.f input,.f textarea,.f select,.lock input{display:block;width:100%;margin-top:5px;font:inherit;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:11px 12px;outline:none}
+.f textarea{resize:vertical;min-height:120px;line-height:1.6}
+.f input:focus,.f textarea:focus,.f select:focus,.lock input:focus{border-color:var(--ember);box-shadow:0 0 0 3px rgba(255,106,43,.18)}
 .f select option{background:#15101c}
-.full{white-space:pre-wrap;word-wrap:break-word;font-family:var(--serif);font-size:1rem;line-height:1.65;margin-top:14px}
+.moods{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.moods button{font-size:22px;border:1px solid var(--line);background:none;border-radius:12px;padding:4px 8px;cursor:pointer}
+.moods button.on{background:rgba(255,160,110,.22);border-color:var(--ember)}
+.full{white-space:pre-wrap;word-wrap:break-word;font-family:var(--serif);font-size:1.12rem;line-height:1.75;margin-top:14px}
 .hint{color:var(--faint);font-size:.82rem;margin-top:6px}
+
+.chat{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.bub{max-width:82%;padding:9px 13px;border-radius:18px;background:rgba(255,255,255,.08);align-self:flex-start;border-bottom-left-radius:5px;white-space:pre-wrap}
+.bub.r{align-self:flex-end;background:linear-gradient(135deg,rgba(255,179,71,.28),rgba(255,106,43,.28));border-bottom-left-radius:18px;border-bottom-right-radius:5px}
+.bub small{display:block;font:10px var(--mono);color:var(--dim);margin-bottom:1px}
 
 .toast{position:fixed;z-index:80;left:50%;bottom:104px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#1a1422;border:1px solid var(--line);padding:9px 16px;border-radius:99px;font-size:.88rem;transition:.3s}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.lock{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at 50% 40%,#2a0d04,#05060d 70%);display:flex;align-items:center;justify-content:center;padding:20px}
+.lock[hidden]{display:none}
+.lock-box{width:min(340px,100%);text-align:center;display:flex;flex-direction:column;gap:12px}
+.lock-title{font-family:var(--serif);font-style:italic;font-size:2rem;color:var(--gold)}
+.lock-box p{margin:0;color:var(--dim)}
+.lock-box input{text-align:center;letter-spacing:.3em}
+.lock-err{color:#ff8f8f;min-height:1.2em;font-size:.85rem}
 [hidden]{display:none!important}
 
+/* compact writing box by default; the ⤢ button enlarges it */
+.modal h3{padding-right:44px;font-size:1.35rem}
+.expand{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--glass-2);color:var(--ink);font-size:17px;cursor:pointer}
+.modal .full{font-size:1rem;line-height:1.65}
+.f textarea{min-height:76px}
+.modal.big{width:min(900px,100%);max-height:96svh}
+.modal.big .f textarea{min-height:46svh}
+.modal.big .full{font-size:1.15rem}
+
+/* write button inside the nav bar */
+.nav button{flex:1 1 0;min-width:0;padding:7px 2px 5px}
+.nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav button.write{color:#1a0c05;background:linear-gradient(135deg,var(--gold),var(--ember));font-weight:600;flex:1 1 0}
+.nav button.write i{font-size:18px}
+@media(max-width:380px){.nav button{font-size:.62rem}.nav button i{font-size:16px}}
+.fab{display:none!important}
+/* explore mode: fade the UI, let the galaxy be moved and zoomed */
 body.explore .wrap,body.explore .nav,body.explore .top{opacity:0;pointer-events:none;transition:opacity .3s}
 body.explore .veil{background:none!important}
-body.free .wrap{opacity:0;pointer-events:none;transition:opacity .3s}
 .xbar{position:fixed;z-index:60;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
 .xhint{font:12px var(--mono);color:var(--dim);background:var(--glass);padding:4px 12px;border-radius:99px;border:1px solid var(--line)}
 .xbtns{display:flex;gap:8px;pointer-events:auto}
 .xbtns button{min-width:48px;height:48px;border-radius:24px;border:1px solid var(--line);background:rgba(14,12,20,.78);color:var(--ink);font-size:22px;cursor:pointer;padding:0 16px;backdrop-filter:blur(10px)}
 .xbtns .done{background:linear-gradient(135deg,var(--gold),var(--ember));color:#1a0c05;font-size:15px;font-weight:600;border:none}
+.chooser{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+
+/* clean home: no title, no boxes — the galaxy itself is touchable */
+body.free .wrap{pointer-events:none}
+.freehint{position:fixed;z-index:15;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 100px);text-align:center;font:11px var(--mono);color:var(--dim);opacity:0;pointer-events:none;transition:opacity .4s}
+body.free .freehint{opacity:.55}
+body.explore .freehint{opacity:0}
+
+.shoot{position:fixed;z-index:2;width:var(--len,120px);height:2px;pointer-events:none;border-radius:2px;transform:rotate(32deg);transform-origin:left center;
+  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,235,210,.95));filter:drop-shadow(0 0 6px rgba(255,190,130,.9));opacity:0;animation:shoot 1.2s ease-out forwards}
+@keyframes shoot{0%{opacity:0;translate:-30px -20px}15%{opacity:1}100%{opacity:0;translate:200px 125px}}
+
+/* same icon box for every nav button so all labels sit on one line */
+.nav button i{display:block;height:22px;line-height:22px;overflow:visible}
+.nav button.write i{font-size:16px}
+.nav button span{line-height:1.2}
+
+/* Write looks like the other tabs; only its pencil is accent-coloured */
+.nav button.write{background:none;color:var(--faint);font-weight:400}
+.nav button.write i{display:flex;align-items:center;justify-content:center;font-size:18px}
+.nav button.write svg{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button.write:active{background:rgba(255,160,110,.12)}
+
+/* ---- 7 nav buttons ---- */
+.nav{width:min(97vw,540px)}
+.nav button{font-size:.64rem}
+.nav button i svg{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:380px){.nav button{font-size:.58rem}}
+/* ---- photos ---- */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+.thumb{all:unset;box-sizing:border-box;position:relative;display:block;aspect-ratio:1;border-radius:16px;overflow:hidden;cursor:pointer;background:var(--glass);border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .cap{position:absolute;left:0;right:0;bottom:0;padding:20px 9px 7px;font-size:.78rem;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.78));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thumb .by{position:absolute;top:7px;left:7px;font:10px var(--mono);color:#fff;background:rgba(0,0,0,.55);padding:1px 7px;border-radius:99px}
+.bigimg{display:block;width:100%;max-height:58svh;object-fit:contain;border-radius:14px;margin-top:12px;background:#000}
+img.nomedia{visibility:hidden}
+/* ---- songs ---- */
+.songwrap{position:relative}
+.songwrap .song-card{padding-right:76px}
+.playbtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;color:#1a0c05;background:linear-gradient(135deg,var(--gold),var(--ember));box-shadow:0 4px 18px rgba(255,106,43,.4);display:flex;align-items:center;justify-content:center}
+.embed{margin-top:14px;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:16/9}
+.embed.sp{aspect-ratio:auto;height:152px}
+.embed iframe{width:100%;height:100%;border:0;display:block}
+/* ---- player ---- */
+.player{position:fixed;z-index:32;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 84px);width:min(95vw,520px);
+  padding:9px 12px 6px;border-radius:20px;background:rgba(16,12,22,.92);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.pl-row{display:flex;align-items:center;gap:6px}
+.pl-info{flex:1;min-width:0;display:flex;flex-direction:column}
+.pl-info b{font-family:var(--serif);font-weight:400;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-info small{color:var(--dim);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-btn{width:38px;height:38px;border-radius:50%;border:none;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.pl-btn.main{background:linear-gradient(135deg,var(--gold),var(--ember));color:#1a0c05}
+.pl-btn.x{color:var(--faint);font-size:15px}
+.pl-bar{display:flex;align-items:center;gap:8px;font:10px var(--mono);color:var(--faint);margin-top:2px}
+.pl-bar input{flex:1;accent-color:var(--ember);height:22px;margin:0}
+body.playing .freehint{display:none}
+body.playing .wrap{padding-bottom:calc(env(safe-area-inset-bottom) + 190px)}
+body.explore .player{opacity:0;pointer-events:none}
+
 </style>
 </head>
 <body data-view="home">
@@ -131,26 +215,28 @@ body.free .wrap{opacity:0;pointer-events:none;transition:opacity .3s}
 <div class="veil" aria-hidden="true"></div>
 
 <header class="top">
-  <a class="brand" href="#home" data-go="home"><span class="dot"></span><span>Our Little Universe</span></a>
-  <span id="syncBadge" class="badge">Local</span>
-  <button id="btnClean" class="icon-btn" aria-label="Show or hide UI" title="Show / hide UI">◐</button>
+  <a class="brand" href="#home"><span class="dot"></span><span>Our Little Universe</span></a>
+  <span id="syncBadge" class="badge" hidden></span>
+  <button id="btnClean" class="icon-btn" aria-label="Show or hide the title and boxes" title="Show / hide title and boxes">◐</button>
   <button id="btnExplore" class="icon-btn" aria-label="Explore the galaxy" title="Explore the galaxy">✥</button>
-  <button id="btnSettings" class="icon-btn" aria-label="Settings" title="Supabase Settings">⚙</button>
+  <button id="btnSettings" class="icon-btn" aria-label="Settings">⚙</button>
 </header>
 
 <main id="view" class="wrap"></main>
 
 <nav class="nav" id="nav">
-  <button data-go="home" class="on"><i>✦</i><span>Home</span></button>
+  <button data-go="home"><i>✦</i><span>Home</span></button>
   <button data-go="letters"><i>✉</i><span>Letters</span></button>
   <button data-go="diary"><i>☾</i><span>Diary</span></button>
-  <button data-write="1" class="write" aria-label="Write"><i><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 0l0 0a2 2 0 0 1 0 3L8 19l-4 1z"/><path d="M14 7l3 3"/></svg></i><span>Write</span></button>
+  <button data-write class="write" aria-label="Write"><i><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 0l0 0a2 2 0 0 1 0 3L8 19l-4 1z"/><path d="M14 7l3 3"/></svg></i><span>Write</span></button>
   <button data-go="moments"><i>❖</i><span>Moments</span></button>
   <button data-go="songs"><i>♪</i><span>Songs</span></button>
+  <button data-go="photos"><i><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10.5" r="1.6"/><path d="M4 17l5-4.5 3.5 3L15.5 13 20 17"/></svg></i><span>Photos</span></button>
 </nav>
 
+<div id="freeHint" class="freehint">drag: rotate · pinch: zoom · 2 fingers: move</div>
 <div id="exploreBar" class="xbar" hidden>
-  <div class="xhint">drag: rotate · scroll: zoom</div>
+  <div class="xhint">drag: rotate · pinch: zoom · 2 fingers: move</div>
   <div class="xbtns">
     <button data-x="out" aria-label="Zoom out">−</button>
     <button data-x="in" aria-label="Zoom in">+</button>
@@ -158,392 +244,10 @@ body.free .wrap{opacity:0;pointer-events:none;transition:opacity .3s}
     <button data-x="done" class="done">Done</button>
   </div>
 </div>
-<div id="modalRoot"></div>
-<div id="toast" class="toast" role="status"></div>
-
-<script>
-(function () {
-  var canvas = document.getElementById('galaxy');
-  if (!canvas) return;
-  var gl = canvas.getContext('webgl', { antialias: false, alpha: false }) || canvas.getContext('experimental-webgl');
-  if (!gl) { document.body.classList.add('no-webgl'); return; }
-
-  var mobile = /Android|iPhone|iPad|Mobi/i.test(navigator.userAgent) || Math.min(innerWidth, innerHeight) < 700;
-  var N = mobile ? 55000 : 120000;
-  var P = { radius: 4.6, branches: 3, spin: 1.15, randomness: 0.5, power: 2.6, hole: 0.34 };
-  var INSIDE = [1.0, 0.36, 0.06], OUTSIDE = [0.22, 0.48, 1.0];
-  var STRIDE = 7, data = new Float32Array(N * STRIDE);
-
-  function rnd() { return Math.random(); }
-  function signedPow() { return Math.pow(rnd(), P.power) * (rnd() < 0.5 ? 1 : -1); }
-
-  for (var i = 0; i < N; i++) {
-    var o = i * STRIDE, x, y, z, r, mix;
-    if (i < N * 0.06) {
-      var u = rnd() * 2 - 1, t = rnd() * Math.PI * 2, s = Math.sqrt(1 - u * u), R = 7 + rnd() * 9;
-      x = s * Math.cos(t) * R; y = u * R; z = s * Math.sin(t) * R;
-      data[o + 6] = 0.5 + rnd() * 0.9;
-      data[o + 3] = 0.55; data[o + 4] = 0.7; data[o + 5] = 1.0;
-    } else {
-      r = P.hole + Math.pow(rnd(), 1.7) * (P.radius - P.hole);
-      var a = (i % P.branches) / P.branches * Math.PI * 2 + r * P.spin;
-      x = Math.cos(a) * r + signedPow() * P.randomness * r;
-      z = Math.sin(a) * r + signedPow() * P.randomness * r;
-      y = signedPow() * P.randomness * r * 0.45;
-      mix = Math.min(1, r / P.radius);
-      var j = 0.75 + rnd() * 0.5;
-      data[o + 3] = (INSIDE[0] + (OUTSIDE[0] - INSIDE[0]) * mix) * j;
-      data[o + 4] = (INSIDE[1] + (OUTSIDE[1] - INSIDE[1]) * mix) * j;
-      data[o + 5] = (INSIDE[2] + (OUTSIDE[2] - INSIDE[2]) * mix) * j;
-      data[o + 6] = 0.5 + rnd() * 1.5;
-    }
-    data[o] = x; data[o + 1] = y; data[o + 2] = z;
-  }
-
-  function shader(type, src) {
-    var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s;
-  }
-  var pProg = gl.createProgram();
-  gl.attachShader(pProg, shader(gl.VERTEX_SHADER,
-    'attribute vec3 aPos;attribute vec3 aColor;attribute float aSize;' +
-    'uniform mat4 uMVP;uniform float uTime,uScale;varying vec3 vColor;varying float vA;' +
-    'void main(){float r=length(aPos.xz);float w=uTime*(0.04+0.2/(0.6+r));float c=cos(w),s=sin(w);' +
-    'vec3 p=vec3(aPos.x*c-aPos.z*s,aPos.y,aPos.x*s+aPos.z*c);vec4 q=uMVP*vec4(p,1.0);gl_Position=q;' +
-    'float sz=aSize*uScale/max(q.w,0.08);gl_PointSize=clamp(sz,1.0,42.0);' +
-    'float glow=1.0+2.2*exp(-r*1.6);vColor=aColor*glow*0.65;vA=clamp(sz/3.0,0.35,1.0);}'
-  ));
-  gl.attachShader(pProg, shader(gl.FRAGMENT_SHADER,
-    'precision mediump float;varying vec3 vColor;varying float vA;' +
-    'void main(){vec2 d=gl_PointCoord-0.5;float k=smoothstep(0.5,0.0,length(d));gl_FragColor=vec4(vColor*k,k*vA);}'
-  ));
-  gl.linkProgram(pProg);
-  gl.useProgram(pProg);
-
-  var buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-
-  var aPos = gl.getAttribLocation(pProg, 'aPos');
-  var aColor = gl.getAttribLocation(pProg, 'aColor');
-  var aSize = gl.getAttribLocation(pProg, 'aSize');
-  gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 28, 0);
-  gl.enableVertexAttribArray(aColor); gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 28, 12);
-  gl.enableVertexAttribArray(aSize); gl.vertexAttribPointer(aSize, 1, gl.FLOAT, false, 28, 24);
-
-  var uMVP = gl.getUniformLocation(pProg, 'uMVP');
-  var uTime = gl.getUniformLocation(pProg, 'uTime');
-  var uScale = gl.getUniformLocation(pProg, 'uScale');
-
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-
-  window.cam = { rotX: 0.58, rotY: 0.2, dist: 6.2 };
-  var dragging = false, lx = 0, ly = 0;
-  window.addEventListener('pointerdown', function (e) {
-    if (e.target.closest('button,input,textarea,select,.modal,.nav,.top')) return;
-    dragging = true; lx = e.clientX; ly = e.clientY;
-  });
-  window.addEventListener('pointermove', function (e) {
-    if (!dragging) return;
-    window.cam.rotY += (e.clientX - lx) * 0.005;
-    window.cam.rotX = Math.max(-1.4, Math.min(1.4, window.cam.rotX + (e.clientY - ly) * 0.005));
-    lx = e.clientX; ly = e.clientY;
-  });
-  window.addEventListener('pointerup', function () { dragging = false; });
-  window.addEventListener('wheel', function (e) {
-    if (e.target.closest('.modal')) return;
-    window.cam.dist = Math.max(1.8, Math.min(14, window.cam.dist + e.deltaY * 0.004));
-  }, { passive: true });
-
-  function matMVP(aspect) {
-    var fov = 0.85, f = 1 / Math.tan(fov / 2), n = 0.1, far = 100;
-    var cx = Math.cos(window.cam.rotX), sx = Math.sin(window.cam.rotX);
-    var cy = Math.cos(window.cam.rotY), sy = Math.sin(window.cam.rotY);
-    var d = window.cam.dist;
-    return new Float32Array([
-      (f / aspect) * cy, f * sx * sy, -cx * sy, -cx * sy,
-      0, f * cx, sx, sx,
-      (f / aspect) * sy, -f * sx * cy, cx * cy, cx * cy,
-      0, 0, d - (2 * far * n) / (far - n), d
-    ]);
-  }
-
-  function resize() {
-    var dpr = Math.min(2, devicePixelRatio || 1);
-    canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-  }
-  resize(); window.addEventListener('resize', resize);
-
-  var t0 = performance.now();
-  function frame(now) {
-    var t = (now - t0) * 0.001;
-    if (!dragging) window.cam.rotY += 0.0008;
-    gl.clearColor(0.02, 0.024, 0.05, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniformMatrix4fv(uMVP, false, matMVP(canvas.width / Math.max(1, canvas.height)));
-    gl.uniform1f(uTime, t);
-    gl.uniform1f(uScale, canvas.height * 0.012);
-    gl.drawArrays(gl.POINTS, 0, N);
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
-
-(function () {
-  var DEFAULT_SUPABASE_URL = 'https://biimayxczduxvagdxllz.supabase.co';
-  var DEFAULT_SUPABASE_KEY = 'sb_publishable_gailki0S04-BHT-DGGHFPA_nwmR7WM7';
-
-  var cfg = {
-    url: localStorage.getItem('sb_url') || DEFAULT_SUPABASE_URL,
-    key: localStorage.getItem('sb_key') || DEFAULT_SUPABASE_KEY
-  };
-
-  var sb = null;
-  function initSupabase() {
-    var badge = document.getElementById('syncBadge');
-    if (cfg.url && cfg.key && window.supabase) {
-      try {
-        sb = window.supabase.createClient(cfg.url, cfg.key);
-        badge.textContent = 'Supabase';
-        return;
-      } catch (e) {}
-    }
-    sb = null;
-    badge.textContent = 'Local';
-  }
-  initSupabase();
-
-  var state = { view: 'home', items: [] };
-  var viewEl = document.getElementById('view');
-  var modalRoot = document.getElementById('modalRoot');
-
-  function toast(msg) {
-    var el = document.getElementById('toast');
-    el.textContent = msg;
-    el.classList.add('on');
-    clearTimeout(el._t);
-    el._t = setTimeout(function () { el.classList.remove('on'); }, 2400);
-  }
-
-  function esc(s) {
-    return String(s || '').replace(/[&<>"']/g, function (c) {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
-    });
-  }
-
-  function fmtDate(iso) {
-    if (!iso) return 'Just now';
-    try {
-      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch (e) { return ''; }
-  }
-
-  async function fetchAll() {
-    if (sb) {
-      try {
-        var res = await sb.from('letters').select('*').order('created_at', { ascending: false });
-        if (!res.error && Array.isArray(res.data)) {
-          state.items = res.data;
-          return state.items;
-        }
-      } catch (e) {}
-    }
-    try {
-      state.items = JSON.parse(localStorage.getItem('ulu_letters_fallback') || '[]');
-    } catch (e) { state.items = []; }
-    return state.items;
-  }
-
-  async function createItem(payload) {
-    if (sb) {
-      try {
-        var res = await sb.from('letters').insert([payload]).select();
-        if (!res.error) {
-          toast('Saved to Supabase');
-          await fetchAll();
-          renderView();
-          return true;
-        }
-      } catch (e) {}
-    }
-    var item = Object.assign({ id: Date.now(), created_at: new Date().toISOString() }, payload);
-    state.items.unshift(item);
-    localStorage.setItem('ulu_letters_fallback', JSON.stringify(state.items));
-    toast('Saved locally');
-    renderView();
-    return true;
-  }
-
-  function closeModal() { modalRoot.innerHTML = ''; }
-
-  function openWriteModal(defaultCategory) {
-    modalRoot.innerHTML = `
-      <div class="modal-bg" id="mBg">
-        <div class="modal">
-          <button class="expand" id="mClose" aria-label="Close">✕</button>
-          <h3>New Entry</h3>
-          <form id="writeForm">
-            <label class="f">Category
-              <select name="category">
-                <option value="letters" ${defaultCategory === 'letters' ? 'selected' : ''}>letters</option>
-                <option value="diary" ${defaultCategory === 'diary' ? 'selected' : ''}>diary</option>
-                <option value="moments" ${defaultCategory === 'moments' ? 'selected' : ''}>moments</option>
-                <option value="songs" ${defaultCategory === 'songs' ? 'selected' : ''}>songs</option>
-              </select>
-            </label>
-            <label class="f">Title
-              <input type="text" name="title" placeholder="Optional title">
-            </label>
-            <label class="f">Content
-              <textarea name="content" required placeholder="Write something..."></textarea>
-            </label>
-            <div class="row">
-              <button type="submit" class="btn primary">Save</button>
-              <button type="button" class="btn" id="mCancel">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-    document.getElementById('mClose').onclick = closeModal;
-    document.getElementById('mCancel').onclick = closeModal;
-    document.getElementById('mBg').onclick = function (e) { if (e.target.id === 'mBg') closeModal(); };
-    document.getElementById('writeForm').onsubmit = async function (e) {
-      e.preventDefault();
-      var fd = new FormData(e.target);
-      await createItem({
-        category: fd.get('category') || 'letters',
-        title: (fd.get('title') || '').trim(),
-        content: (fd.get('content') || '').trim()
-      });
-      closeModal();
-    };
-  }
-
-  function openSettingsModal() {
-    modalRoot.innerHTML = `
-      <div class="modal-bg" id="mBg">
-        <div class="modal">
-          <button class="expand" id="mClose" aria-label="Close">✕</button>
-          <h3>Supabase Settings</h3>
-          <form id="cfgForm">
-            <label class="f">Supabase URL
-              <input type="text" name="url" value="${esc(cfg.url)}">
-            </label>
-            <label class="f">Publishable Key
-              <input type="text" name="key" value="${esc(cfg.key)}">
-            </label>
-            <div class="row">
-              <button type="submit" class="btn primary">Save & Reconnect</button>
-              <button type="button" class="btn" id="mCancel">Close</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-    document.getElementById('mClose').onclick = closeModal;
-    document.getElementById('mCancel').onclick = closeModal;
-    document.getElementById('mBg').onclick = function (e) { if (e.target.id === 'mBg') closeModal(); };
-    document.getElementById('cfgForm').onsubmit = async function (e) {
-      e.preventDefault();
-      var fd = new FormData(e.target);
-      cfg.url = (fd.get('url') || '').trim();
-      cfg.key = (fd.get('key') || '').trim();
-      localStorage.setItem('sb_url', cfg.url);
-      localStorage.setItem('sb_key', cfg.key);
-      initSupabase();
-      await fetchAll();
-      renderView();
-      toast('Settings updated');
-      closeModal();
-    };
-  }
-
-  function setView(v) {
-    state.view = v;
-    document.body.setAttribute('data-view', v);
-    document.querySelectorAll('#nav button[data-go]').forEach(function (b) {
-      b.classList.toggle('on', b.getAttribute('data-go') === v);
-    });
-    renderView();
-  }
-
-  document.querySelectorAll('[data-go]').forEach(function (el) {
-    el.addEventListener('click', function (e) {
-      e.preventDefault();
-      setView(el.getAttribute('data-go'));
-    });
-  });
-
-  document.querySelector('[data-write]').addEventListener('click', function () {
-    openWriteModal(state.view === 'home' ? 'letters' : state.view);
-  });
-
-  document.getElementById('btnSettings').addEventListener('click', openSettingsModal);
-  document.getElementById('btnClean').addEventListener('click', function () {
-    document.body.classList.toggle('free');
-  });
-
-  var exploreBar = document.getElementById('exploreBar');
-  document.getElementById('btnExplore').addEventListener('click', function () {
-    document.body.classList.add('explore');
-    exploreBar.hidden = false;
-  });
-  exploreBar.addEventListener('click', function (e) {
-    var act = e.target.getAttribute('data-x');
-    if (!act) return;
-    if (act === 'in') window.cam.dist = Math.max(1.8, window.cam.dist - 0.8);
-    if (act === 'out') window.cam.dist = Math.min(14, window.cam.dist + 0.8);
-    if (act === 'reset') { window.cam.rotX = 0.58; window.cam.rotY = 0.2; window.cam.dist = 6.2; }
-    if (act === 'done') { document.body.classList.remove('explore'); exploreBar.hidden = true; }
-  });
-
-  function renderView() {
-    if (state.view === 'home') {
-      viewEl.innerHTML = `
-        <div class="hero">
-          <h1>Our Little <em>Universe</em></h1>
-          <p>A digital sanctuary for your thoughts, letters, and moments.</p>
-          <div class="code">project: <b>biimayxczduxvagdxllz</b> · table: <b>letters</b></div>
-        </div>
-      `;
-      return;
-    }
-
-    viewEl.innerHTML = `
-      <div class="page-head">
-        <h2>${esc(state.view.charAt(0).toUpperCase() + state.view.slice(1))}</h2>
-        <p>Connected to Supabase table: letters</p>
-      </div>
-      <div class="list"><div class="empty"><b>Loading...</b></div></div>
-    `;
-
-    fetchAll().then(function () {
-      var list = viewEl.querySelector('.list');
-      if (!list) return;
-      var filtered = state.items.filter(function (item) {
-        return !item.category || item.category === state.view || state.view === 'letters';
-      });
-      if (!filtered.length) {
-        list.innerHTML = `<div class="empty"><b>No ${esc(state.view)} yet</b><small>Tap Write to add one.</small></div>`;
-        return;
-      }
-      list.innerHTML = filtered.map(function (item) {
-        return `
-          <div class="card letter-card">
-            <div class="env">✉</div>
-            <div class="meta"><span class="tag">${esc(item.category || 'letters')}</span><span>${fmtDate(item.created_at)}</span></div>
-            <h3>${esc(item.title || 'Untitled')}</h3>
-            <div class="preview">${esc(item.content)}</div>
-          </div>
-        `;
-      }).join('');
-    });
-  }
-
-  fetchAll().then(renderView);
-})();
-</script>
-</body>
-</html>
+<div id="player" class="player" hidden>
+  <div class="pl-row">
+    <div class="pl-info"><b id="plTitle"></b><small id="plSub"></small></div>
+    <button type="button" class="pl-btn" data-p="prev" aria-label="Previous song"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 5h2v14H6zM20 5.5v13L9.5 12z" fill="currentColor"/></svg></button>
+    <button type="button" class="pl-btn main" data-p="toggle" aria-label="Play or pause"></button>
+    <button type="button" class="pl-btn" data-p="next" aria-label="Next song"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M16 5h2v14h-2zM4 5.5v13L14.5 12z" fill="currentColor"/></svg></button>
+    <button type="button" class="pl-btn x"
