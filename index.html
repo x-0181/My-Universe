@@ -291,8 +291,8 @@ body.free .wrap{opacity:0;pointer-events:none;transition:opacity .3s}
 })();
 
 (function () {
-  var DEFAULT_SUPABASE_URL = '';
-  var DEFAULT_SUPABASE_KEY = '';
+  var DEFAULT_SUPABASE_URL = 'https://biimayxczduxvagdxllz.supabase.co';
+  var DEFAULT_SUPABASE_KEY = 'sb_publishable_gailki0S04-BHT-DGGHFPA_nwmR7WM7';
 
   var cfg = {
     url: localStorage.getItem('sb_url') || DEFAULT_SUPABASE_URL,
@@ -341,5 +341,209 @@ body.free .wrap{opacity:0;pointer-events:none;transition:opacity .3s}
 
   async function fetchAll() {
     if (sb) {
-      var res = await sb.from('letters').select('*').order('created_at', { ascending: false });
-      if
+      try {
+        var res = await sb.from('letters').select('*').order('created_at', { ascending: false });
+        if (!res.error && Array.isArray(res.data)) {
+          state.items = res.data;
+          return state.items;
+        }
+      } catch (e) {}
+    }
+    try {
+      state.items = JSON.parse(localStorage.getItem('ulu_letters_fallback') || '[]');
+    } catch (e) { state.items = []; }
+    return state.items;
+  }
+
+  async function createItem(payload) {
+    if (sb) {
+      try {
+        var res = await sb.from('letters').insert([payload]).select();
+        if (!res.error) {
+          toast('Saved to Supabase');
+          await fetchAll();
+          renderView();
+          return true;
+        }
+      } catch (e) {}
+    }
+    var item = Object.assign({ id: Date.now(), created_at: new Date().toISOString() }, payload);
+    state.items.unshift(item);
+    localStorage.setItem('ulu_letters_fallback', JSON.stringify(state.items));
+    toast('Saved locally');
+    renderView();
+    return true;
+  }
+
+  function closeModal() { modalRoot.innerHTML = ''; }
+
+  function openWriteModal(defaultCategory) {
+    modalRoot.innerHTML = `
+      <div class="modal-bg" id="mBg">
+        <div class="modal">
+          <button class="expand" id="mClose" aria-label="Close">✕</button>
+          <h3>New Entry</h3>
+          <form id="writeForm">
+            <label class="f">Category
+              <select name="category">
+                <option value="letters" ${defaultCategory === 'letters' ? 'selected' : ''}>letters</option>
+                <option value="diary" ${defaultCategory === 'diary' ? 'selected' : ''}>diary</option>
+                <option value="moments" ${defaultCategory === 'moments' ? 'selected' : ''}>moments</option>
+                <option value="songs" ${defaultCategory === 'songs' ? 'selected' : ''}>songs</option>
+              </select>
+            </label>
+            <label class="f">Title
+              <input type="text" name="title" placeholder="Optional title">
+            </label>
+            <label class="f">Content
+              <textarea name="content" required placeholder="Write something..."></textarea>
+            </label>
+            <div class="row">
+              <button type="submit" class="btn primary">Save</button>
+              <button type="button" class="btn" id="mCancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    document.getElementById('mClose').onclick = closeModal;
+    document.getElementById('mCancel').onclick = closeModal;
+    document.getElementById('mBg').onclick = function (e) { if (e.target.id === 'mBg') closeModal(); };
+    document.getElementById('writeForm').onsubmit = async function (e) {
+      e.preventDefault();
+      var fd = new FormData(e.target);
+      await createItem({
+        category: fd.get('category') || 'letters',
+        title: (fd.get('title') || '').trim(),
+        content: (fd.get('content') || '').trim()
+      });
+      closeModal();
+    };
+  }
+
+  function openSettingsModal() {
+    modalRoot.innerHTML = `
+      <div class="modal-bg" id="mBg">
+        <div class="modal">
+          <button class="expand" id="mClose" aria-label="Close">✕</button>
+          <h3>Supabase Settings</h3>
+          <form id="cfgForm">
+            <label class="f">Supabase URL
+              <input type="text" name="url" value="${esc(cfg.url)}">
+            </label>
+            <label class="f">Publishable Key
+              <input type="text" name="key" value="${esc(cfg.key)}">
+            </label>
+            <div class="row">
+              <button type="submit" class="btn primary">Save & Reconnect</button>
+              <button type="button" class="btn" id="mCancel">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    document.getElementById('mClose').onclick = closeModal;
+    document.getElementById('mCancel').onclick = closeModal;
+    document.getElementById('mBg').onclick = function (e) { if (e.target.id === 'mBg') closeModal(); };
+    document.getElementById('cfgForm').onsubmit = async function (e) {
+      e.preventDefault();
+      var fd = new FormData(e.target);
+      cfg.url = (fd.get('url') || '').trim();
+      cfg.key = (fd.get('key') || '').trim();
+      localStorage.setItem('sb_url', cfg.url);
+      localStorage.setItem('sb_key', cfg.key);
+      initSupabase();
+      await fetchAll();
+      renderView();
+      toast('Settings updated');
+      closeModal();
+    };
+  }
+
+  function setView(v) {
+    state.view = v;
+    document.body.setAttribute('data-view', v);
+    document.querySelectorAll('#nav button[data-go]').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-go') === v);
+    });
+    renderView();
+  }
+
+  document.querySelectorAll('[data-go]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      setView(el.getAttribute('data-go'));
+    });
+  });
+
+  document.querySelector('[data-write]').addEventListener('click', function () {
+    openWriteModal(state.view === 'home' ? 'letters' : state.view);
+  });
+
+  document.getElementById('btnSettings').addEventListener('click', openSettingsModal);
+  document.getElementById('btnClean').addEventListener('click', function () {
+    document.body.classList.toggle('free');
+  });
+
+  var exploreBar = document.getElementById('exploreBar');
+  document.getElementById('btnExplore').addEventListener('click', function () {
+    document.body.classList.add('explore');
+    exploreBar.hidden = false;
+  });
+  exploreBar.addEventListener('click', function (e) {
+    var act = e.target.getAttribute('data-x');
+    if (!act) return;
+    if (act === 'in') window.cam.dist = Math.max(1.8, window.cam.dist - 0.8);
+    if (act === 'out') window.cam.dist = Math.min(14, window.cam.dist + 0.8);
+    if (act === 'reset') { window.cam.rotX = 0.58; window.cam.rotY = 0.2; window.cam.dist = 6.2; }
+    if (act === 'done') { document.body.classList.remove('explore'); exploreBar.hidden = true; }
+  });
+
+  function renderView() {
+    if (state.view === 'home') {
+      viewEl.innerHTML = `
+        <div class="hero">
+          <h1>Our Little <em>Universe</em></h1>
+          <p>A digital sanctuary for your thoughts, letters, and moments.</p>
+          <div class="code">project: <b>biimayxczduxvagdxllz</b> · table: <b>letters</b></div>
+        </div>
+      `;
+      return;
+    }
+
+    viewEl.innerHTML = `
+      <div class="page-head">
+        <h2>${esc(state.view.charAt(0).toUpperCase() + state.view.slice(1))}</h2>
+        <p>Connected to Supabase table: letters</p>
+      </div>
+      <div class="list"><div class="empty"><b>Loading...</b></div></div>
+    `;
+
+    fetchAll().then(function () {
+      var list = viewEl.querySelector('.list');
+      if (!list) return;
+      var filtered = state.items.filter(function (item) {
+        return !item.category || item.category === state.view || state.view === 'letters';
+      });
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty"><b>No ${esc(state.view)} yet</b><small>Tap Write to add one.</small></div>`;
+        return;
+      }
+      list.innerHTML = filtered.map(function (item) {
+        return `
+          <div class="card letter-card">
+            <div class="env">✉</div>
+            <div class="meta"><span class="tag">${esc(item.category || 'letters')}</span><span>${fmtDate(item.created_at)}</span></div>
+            <h3>${esc(item.title || 'Untitled')}</h3>
+            <div class="preview">${esc(item.content)}</div>
+          </div>
+        `;
+      }).join('');
+    });
+  }
+
+  fetchAll().then(renderView);
+})();
+</script>
+</body>
+</html>
