@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05060d">
 <title>Our Little Universe</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --space:#05060d; --ink:#f4ece6; --dim:#b9aea6; --faint:#7d746f;
@@ -78,100 +79,51 @@ body[data-view="home"] .veil{background:radial-gradient(ellipse at 50% 38%,rgba(
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;color:var(--dim);padding:44px 18px;border:1px dashed var(--line);border-radius:18px;background:var(--glass)}
 .empty b{display:block;font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--ink);margin-bottom:4px}
-.fab{position:fixed;z-index:25;right:max(16px,calc(50% - 364px));bottom:calc(env(safe-area-inset-bottom) + 86px);width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;
-  font-size:28px;line-height:1;color:#1a0c05;background:linear-gradient(135deg,var(--gold),var(--ember));box-shadow:0 6px 28px rgba(255,106,43,.5)}
-body[data-view="home"] .fab{display:none}
 
 /* ---------- nav ---------- */
 .nav{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 12px);display:flex;gap:2px;padding:6px;
   border-radius:22px;background:rgba(14,12,20,.78);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:min(94vw,460px)}
-.nav button{flex:1;border:none;background:none;color:var(--faint);font:inherit;font-size:.7rem;padding:7px 0 5px;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
-.nav button i{font-style:normal;font-size:18px}
+.nav button{flex:1 1 0;min-width:0;border:none;background:none;color:var(--faint);font:inherit;font-size:.7rem;padding:7px 2px 5px;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+.nav button i{display:block;height:22px;line-height:22px;overflow:visible;font-style:normal;font-size:18px}
+.nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
 .nav button.on{color:var(--gold);background:rgba(255,160,110,.12)}
+.nav button.write{background:none;color:var(--faint);font-weight:400}
+.nav button.write i{display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav button.write svg{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button.write:active{background:rgba(255,160,110,.12)}
+@media(max-width:380px){.nav button{font-size:.62rem}.nav button i{font-size:16px}}
 
 /* ---------- modal / forms ---------- */
 .modal-bg{position:fixed;inset:0;z-index:50;background:rgba(3,3,8,.72);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);animation:fade .2s}
 @keyframes fade{from{opacity:0}}
-.modal{position:relative;width:min(460px,100%);max-height:72svh;transition:width .25s,max-height .25s;overflow:auto;background:#0f0c16;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom) + 22px);animation:up .25s}
+.modal{position:relative;width:min(460px,100%);max-height:78svh;transition:width .25s,max-height .25s;overflow:auto;background:#0f0c16;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom) + 22px);animation:up .25s}
 @keyframes up{from{transform:translateY(30px);opacity:0}}
 @media(min-width:700px){.modal-bg{align-items:center}.modal{border-radius:24px}}
-.modal h3{margin:0 0 12px;font-family:var(--serif);font-weight:400;font-size:1.6rem}
+.modal h3{margin:0 0 12px;padding-right:44px;font-family:var(--serif);font-weight:400;font-size:1.35rem}
+.expand{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--glass-2);color:var(--ink);font-size:17px;cursor:pointer}
+.modal.big{width:min(900px,100%);max-height:96svh}
+.modal.big .f textarea{min-height:46svh}
 .modal .row{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
-.modal .row .grow{margin-right:auto}
 label.f{display:block;margin-top:12px;font-size:.8rem;color:var(--dim);font-family:var(--mono)}
-.f input,.f textarea,.f select,.lock input{display:block;width:100%;margin-top:5px;font:inherit;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:11px 12px;outline:none}
-.f textarea{resize:vertical;min-height:120px;line-height:1.6}
-.f input:focus,.f textarea:focus,.f select:focus,.lock input:focus{border-color:var(--ember);box-shadow:0 0 0 3px rgba(255,106,43,.18)}
+.f input,.f textarea,.f select{display:block;width:100%;margin-top:5px;font:inherit;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:11px 12px;outline:none}
+.f textarea{resize:vertical;min-height:96px;line-height:1.6}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--ember);box-shadow:0 0 0 3px rgba(255,106,43,.18)}
 .f select option{background:#15101c}
-.moods{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.moods button{font-size:22px;border:1px solid var(--line);background:none;border-radius:12px;padding:4px 8px;cursor:pointer}
-.moods button.on{background:rgba(255,160,110,.22);border-color:var(--ember)}
-.full{white-space:pre-wrap;word-wrap:break-word;font-family:var(--serif);font-size:1.12rem;line-height:1.75;margin-top:14px}
+.full{white-space:pre-wrap;word-wrap:break-word;font-family:var(--serif);font-size:1rem;line-height:1.65;margin-top:14px}
 .hint{color:var(--faint);font-size:.82rem;margin-top:6px}
-
-.chat{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-.bub{max-width:82%;padding:9px 13px;border-radius:18px;background:rgba(255,255,255,.08);align-self:flex-start;border-bottom-left-radius:5px;white-space:pre-wrap}
-.bub.r{align-self:flex-end;background:linear-gradient(135deg,rgba(255,179,71,.28),rgba(255,106,43,.28));border-bottom-left-radius:18px;border-bottom-right-radius:5px}
-.bub small{display:block;font:10px var(--mono);color:var(--dim);margin-bottom:1px}
 
 .toast{position:fixed;z-index:80;left:50%;bottom:104px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#1a1422;border:1px solid var(--line);padding:9px 16px;border-radius:99px;font-size:.88rem;transition:.3s}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-.lock{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at 50% 40%,#2a0d04,#05060d 70%);display:flex;align-items:center;justify-content:center;padding:20px}
-.lock[hidden]{display:none}
-.lock-box{width:min(340px,100%);text-align:center;display:flex;flex-direction:column;gap:12px}
-.lock-title{font-family:var(--serif);font-style:italic;font-size:2rem;color:var(--gold)}
-.lock-box p{margin:0;color:var(--dim)}
-.lock-box input{text-align:center;letter-spacing:.3em}
-.lock-err{color:#ff8f8f;min-height:1.2em;font-size:.85rem}
 [hidden]{display:none!important}
 
-/* compact writing box by default; the ⤢ button enlarges it */
-.modal h3{padding-right:44px;font-size:1.35rem}
-.expand{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--glass-2);color:var(--ink);font-size:17px;cursor:pointer}
-.modal .full{font-size:1rem;line-height:1.65}
-.f textarea{min-height:76px}
-.modal.big{width:min(900px,100%);max-height:96svh}
-.modal.big .f textarea{min-height:46svh}
-.modal.big .full{font-size:1.15rem}
-
-/* write button inside the nav bar */
-.nav button{flex:1 1 0;min-width:0;padding:7px 2px 5px}
-.nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nav button.write{color:#1a0c05;background:linear-gradient(135deg,var(--gold),var(--ember));font-weight:600;flex:1 1 0}
-.nav button.write i{font-size:18px}
-@media(max-width:380px){.nav button{font-size:.62rem}.nav button i{font-size:16px}}
-.fab{display:none!important}
-/* explore mode: fade the UI, let the galaxy be moved and zoomed */
 body.explore .wrap,body.explore .nav,body.explore .top{opacity:0;pointer-events:none;transition:opacity .3s}
 body.explore .veil{background:none!important}
+body.free .wrap{opacity:0;pointer-events:none;transition:opacity .3s}
 .xbar{position:fixed;z-index:60;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
 .xhint{font:12px var(--mono);color:var(--dim);background:var(--glass);padding:4px 12px;border-radius:99px;border:1px solid var(--line)}
 .xbtns{display:flex;gap:8px;pointer-events:auto}
 .xbtns button{min-width:48px;height:48px;border-radius:24px;border:1px solid var(--line);background:rgba(14,12,20,.78);color:var(--ink);font-size:22px;cursor:pointer;padding:0 16px;backdrop-filter:blur(10px)}
 .xbtns .done{background:linear-gradient(135deg,var(--gold),var(--ember));color:#1a0c05;font-size:15px;font-weight:600;border:none}
-.chooser{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
-
-/* clean home: no title, no boxes — the galaxy itself is touchable */
-body.free .wrap{pointer-events:none}
-.freehint{position:fixed;z-index:15;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 100px);text-align:center;font:11px var(--mono);color:var(--dim);opacity:0;pointer-events:none;transition:opacity .4s}
-body.free .freehint{opacity:.55}
-body.explore .freehint{opacity:0}
-
-.shoot{position:fixed;z-index:2;width:var(--len,120px);height:2px;pointer-events:none;border-radius:2px;transform:rotate(32deg);transform-origin:left center;
-  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,235,210,.95));filter:drop-shadow(0 0 6px rgba(255,190,130,.9));opacity:0;animation:shoot 1.2s ease-out forwards}
-@keyframes shoot{0%{opacity:0;translate:-30px -20px}15%{opacity:1}100%{opacity:0;translate:200px 125px}}
-
-/* same icon box for every nav button so all labels sit on one line */
-.nav button i{display:block;height:22px;line-height:22px;overflow:visible}
-.nav button.write i{font-size:16px}
-.nav button span{line-height:1.2}
-
-/* Write looks like the other tabs; only its pencil is accent-coloured */
-.nav button.write{background:none;color:var(--faint);font-weight:400}
-.nav button.write i{display:flex;align-items:center;justify-content:center;font-size:18px}
-.nav button.write svg{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.nav button.write:active{background:rgba(255,160,110,.12)}
-
 </style>
 </head>
 <body data-view="home">
@@ -179,27 +131,26 @@ body.explore .freehint{opacity:0}
 <div class="veil" aria-hidden="true"></div>
 
 <header class="top">
-  <a class="brand" href="#home"><span class="dot"></span><span>Our Little Universe</span></a>
-  <span id="syncBadge" class="badge" hidden></span>
-  <button id="btnClean" class="icon-btn" aria-label="Show or hide the title and boxes" title="Show / hide title and boxes">◐</button>
+  <a class="brand" href="#home" data-go="home"><span class="dot"></span><span>Our Little Universe</span></a>
+  <span id="syncBadge" class="badge">Local</span>
+  <button id="btnClean" class="icon-btn" aria-label="Show or hide UI" title="Show / hide UI">◐</button>
   <button id="btnExplore" class="icon-btn" aria-label="Explore the galaxy" title="Explore the galaxy">✥</button>
-  <button id="btnSettings" class="icon-btn" aria-label="Settings">⚙</button>
+  <button id="btnSettings" class="icon-btn" aria-label="Settings" title="Supabase Settings">⚙</button>
 </header>
 
 <main id="view" class="wrap"></main>
 
 <nav class="nav" id="nav">
-  <button data-go="home"><i>✦</i><span>Home</span></button>
+  <button data-go="home" class="on"><i>✦</i><span>Home</span></button>
   <button data-go="letters"><i>✉</i><span>Letters</span></button>
   <button data-go="diary"><i>☾</i><span>Diary</span></button>
-  <button data-write class="write" aria-label="Write"><i><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 0l0 0a2 2 0 0 1 0 3L8 19l-4 1z"/><path d="M14 7l3 3"/></svg></i><span>Write</span></button>
+  <button data-write="1" class="write" aria-label="Write"><i><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 0l0 0a2 2 0 0 1 0 3L8 19l-4 1z"/><path d="M14 7l3 3"/></svg></i><span>Write</span></button>
   <button data-go="moments"><i>❖</i><span>Moments</span></button>
   <button data-go="songs"><i>♪</i><span>Songs</span></button>
 </nav>
 
-<div id="freeHint" class="freehint">drag: rotate · pinch: zoom · 2 fingers: move</div>
 <div id="exploreBar" class="xbar" hidden>
-  <div class="xhint">drag: rotate · pinch: zoom · 2 fingers: move</div>
+  <div class="xhint">drag: rotate · scroll: zoom</div>
   <div class="xbtns">
     <button data-x="out" aria-label="Zoom out">−</button>
     <button data-x="in" aria-label="Zoom in">+</button>
@@ -210,42 +161,27 @@ body.explore .freehint{opacity:0}
 <div id="modalRoot"></div>
 <div id="toast" class="toast" role="status"></div>
 
-<div id="lock" class="lock" hidden>
-  <form id="lockForm" class="lock-box">
-    <div class="lock-title">Our Little Universe</div>
-    <p>This world is locked.</p>
-    <input id="lockInput" type="password" inputmode="numeric" autocomplete="off" placeholder="passcode">
-    <button class="btn primary" type="submit">Enter</button>
-    <div id="lockErr" class="lock-err"></div>
-  </form>
-</div>
-
 <script>
-/* Our Little Universe — spiral galaxy with a black hole (raw WebGL, no libraries).
-   Inspired by the "JavaScript Animation" galaxy: particles on spiral branches,
-   orange/red core fading to blue edges, camera slowly dives toward the hole and back. */
 (function () {
-  'use strict';
   var canvas = document.getElementById('galaxy');
   if (!canvas) return;
-  var gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' }) ||
-           canvas.getContext('experimental-webgl');
+  var gl = canvas.getContext('webgl', { antialias: false, alpha: false }) || canvas.getContext('experimental-webgl');
   if (!gl) { document.body.classList.add('no-webgl'); return; }
 
   var mobile = /Android|iPhone|iPad|Mobi/i.test(navigator.userAgent) || Math.min(innerWidth, innerHeight) < 700;
-  var N = mobile ? 70000 : 150000;
+  var N = mobile ? 55000 : 120000;
   var P = { radius: 4.6, branches: 3, spin: 1.15, randomness: 0.5, power: 2.6, hole: 0.34 };
   var INSIDE = [1.0, 0.36, 0.06], OUTSIDE = [0.22, 0.48, 1.0];
-
-  /* ---------- particles ---------- */
   var STRIDE = 7, data = new Float32Array(N * STRIDE);
+
   function rnd() { return Math.random(); }
   function signedPow() { return Math.pow(rnd(), P.power) * (rnd() < 0.5 ? 1 : -1); }
+
   for (var i = 0; i < N; i++) {
     var o = i * STRIDE, x, y, z, r, mix;
-    if (i < N * 0.06) {                         // faint far stars (sphere shell)
+    if (i < N * 0.06) {
       var u = rnd() * 2 - 1, t = rnd() * Math.PI * 2, s = Math.sqrt(1 - u * u), R = 7 + rnd() * 9;
-      x = s * Math.cos(t) * R; y = u * R; z = s * Math.sin(t) * R; r = 9; mix = 1;
+      x = s * Math.cos(t) * R; y = u * R; z = s * Math.sin(t) * R;
       data[o + 6] = 0.5 + rnd() * 0.9;
       data[o + 3] = 0.55; data[o + 4] = 0.7; data[o + 5] = 1.0;
     } else {
@@ -265,609 +201,145 @@ body.explore .freehint{opacity:0}
   }
 
   function shader(type, src) {
-    var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
-    return s;
+    var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s;
   }
-  function program(vs, fs) {
-    var p = gl.createProgram();
-    gl.attachShader(p, shader(gl.VERTEX_SHADER, vs));
-    gl.attachShader(p, shader(gl.FRAGMENT_SHADER, fs));
-    gl.linkProgram(p);
-    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
-    return p;
-  }
-
-  var pProg = program(
+  var pProg = gl.createProgram();
+  gl.attachShader(pProg, shader(gl.VERTEX_SHADER,
     'attribute vec3 aPos;attribute vec3 aColor;attribute float aSize;' +
-    'uniform mat4 uMVP;uniform float uTime,uScale,uDim;varying vec3 vColor;varying float vA;' +
-    'void main(){' +
-    ' float r=length(aPos.xz);' +
-    ' float w=uTime*(0.04+0.2/(0.6+r));float c=cos(w),s=sin(w);' +
-    ' vec3 p=vec3(aPos.x*c-aPos.z*s,aPos.y,aPos.x*s+aPos.z*c);' +
-    ' vec4 q=uMVP*vec4(p,1.0);gl_Position=q;' +
-    ' float sz=aSize*uScale/max(q.w,0.08);' +
-    ' gl_PointSize=clamp(sz,1.0,56.0);' +
-    ' float glow=1.0+2.2*exp(-r*1.6);' +
-    ' vColor=aColor*glow*0.62*uDim;' +
-    ' vA=clamp(sz/3.0,0.35,1.0);' +
-    '}',
+    'uniform mat4 uMVP;uniform float uTime,uScale;varying vec3 vColor;varying float vA;' +
+    'void main(){float r=length(aPos.xz);float w=uTime*(0.04+0.2/(0.6+r));float c=cos(w),s=sin(w);' +
+    'vec3 p=vec3(aPos.x*c-aPos.z*s,aPos.y,aPos.x*s+aPos.z*c);vec4 q=uMVP*vec4(p,1.0);gl_Position=q;' +
+    'float sz=aSize*uScale/max(q.w,0.08);gl_PointSize=clamp(sz,1.0,42.0);' +
+    'float glow=1.0+2.2*exp(-r*1.6);vColor=aColor*glow*0.65;vA=clamp(sz/3.0,0.35,1.0);}'
+  ));
+  gl.attachShader(pProg, shader(gl.FRAGMENT_SHADER,
     'precision mediump float;varying vec3 vColor;varying float vA;' +
-    'void main(){vec2 d=gl_PointCoord-0.5;float k=smoothstep(0.5,0.0,length(d));' +
-    ' gl_FragColor=vec4(vColor*k*vA,1.0);}'
-  );
+    'void main(){vec2 d=gl_PointCoord-0.5;float k=smoothstep(0.5,0.0,length(d));gl_FragColor=vec4(vColor*k,k*vA);}'
+  ));
+  gl.linkProgram(pProg);
+  gl.useProgram(pProg);
 
-  var hProg = program(
-    'attribute vec2 aP;void main(){gl_Position=vec4(aP,0.0,1.0);}',
-    'precision mediump float;uniform vec2 uRes,uR;' +
-    'void main(){vec2 p=(gl_FragCoord.xy-uRes*0.5)/uR;float d=length(p);' +
-    ' float ring=exp(-pow((d-1.02)*3.2,2.0));' +
-    ' vec3 col=vec3(1.0,0.45,0.12)*ring*0.55;' +
-    ' float core=1.0-smoothstep(0.86,1.0,d);' +
-    ' gl_FragColor=vec4(col*(1.0-core),core);}'
-  );
-
-  /* ---------- twinkling star field (far shell around everything) ---------- */
-  var NS = mobile ? 2200 : 4200, sd = new Float32Array(NS * 7), pal = [[1, 1, 1], [0.7, 0.8, 1], [1, 0.9, 0.7], [1, 0.75, 0.8], [0.75, 1, 1]];
-  for (var s = 0; s < NS; s++) {
-    var uu = rnd() * 2 - 1, tt = rnd() * Math.PI * 2, ss = Math.sqrt(1 - uu * uu), RR = 14 + rnd() * 18, cc = pal[(rnd() * pal.length) | 0], b = 0.35 + rnd() * 0.65, q = s * 7;
-    sd[q] = ss * Math.cos(tt) * RR; sd[q + 1] = uu * RR; sd[q + 2] = ss * Math.sin(tt) * RR;
-    sd[q + 3] = cc[0] * b; sd[q + 4] = cc[1] * b; sd[q + 5] = cc[2] * b; sd[q + 6] = rnd();
-  }
-  var sProg = program(
-    'attribute vec3 aPos;attribute vec3 aCol;attribute float aSeed;uniform mat4 uMVP;uniform float uTime,uPx;varying vec3 vC;' +
-    'void main(){gl_Position=uMVP*vec4(aPos,1.0);' +
-    ' float tw=0.55+0.45*sin(uTime*(0.7+aSeed*2.6)+aSeed*60.0);' +
-    ' float big=step(0.965,aSeed);' +
-    ' gl_PointSize=(1.9+aSeed*2.2+big*4.5)*uPx*(0.7+0.3*tw);' +
-    ' vC=aCol*(0.7+1.1*tw)*(1.0+big*0.8);}',
-    'precision mediump float;varying vec3 vC;void main(){vec2 d=gl_PointCoord-0.5;float r=length(d);' +
-    ' float core=smoothstep(0.5,0.0,r);float cross=smoothstep(0.06,0.0,min(abs(d.x),abs(d.y)))*smoothstep(0.5,0.1,r)*0.5;' +
-    ' gl_FragColor=vec4(vC*(core*core+cross),1.0);}'
-  );
-  var sBuf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, sBuf); gl.bufferData(gl.ARRAY_BUFFER, sd, gl.STATIC_DRAW);
-  var sLoc = { pos: gl.getAttribLocation(sProg, 'aPos'), col: gl.getAttribLocation(sProg, 'aCol'), seed: gl.getAttribLocation(sProg, 'aSeed'),
-    mvp: gl.getUniformLocation(sProg, 'uMVP'), time: gl.getUniformLocation(sProg, 'uTime'), px: gl.getUniformLocation(sProg, 'uPx') };
-
-  var pBuf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, pBuf);
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-  var qBuf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, qBuf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
 
-  var loc = {
-    pos: gl.getAttribLocation(pProg, 'aPos'), col: gl.getAttribLocation(pProg, 'aColor'),
-    size: gl.getAttribLocation(pProg, 'aSize'), mvp: gl.getUniformLocation(pProg, 'uMVP'),
-    time: gl.getUniformLocation(pProg, 'uTime'), dim: gl.getUniformLocation(pProg, 'uDim'), scale: gl.getUniformLocation(pProg, 'uScale'),
-    hp: gl.getAttribLocation(hProg, 'aP'), hres: gl.getUniformLocation(hProg, 'uRes'),
-    hr: gl.getUniformLocation(hProg, 'uR')
-  };
+  var aPos = gl.getAttribLocation(pProg, 'aPos');
+  var aColor = gl.getAttribLocation(pProg, 'aColor');
+  var aSize = gl.getAttribLocation(pProg, 'aSize');
+  gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 28, 0);
+  gl.enableVertexAttribArray(aColor); gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 28, 12);
+  gl.enableVertexAttribArray(aSize); gl.vertexAttribPointer(aSize, 1, gl.FLOAT, false, 28, 24);
 
-  /* ---------- tiny matrix helpers (column-major) ---------- */
-  function mul(a, b) {
-    var o = new Float32Array(16);
-    for (var c = 0; c < 4; c++) for (var r = 0; r < 4; r++) {
-      var s = 0; for (var k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s;
-    }
-    return o;
+  var uMVP = gl.getUniformLocation(pProg, 'uMVP');
+  var uTime = gl.getUniformLocation(pProg, 'uTime');
+  var uScale = gl.getUniformLocation(pProg, 'uScale');
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+  window.cam = { rotX: 0.58, rotY: 0.2, dist: 6.2 };
+  var dragging = false, lx = 0, ly = 0;
+  window.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('button,input,textarea,select,.modal,.nav,.top')) return;
+    dragging = true; lx = e.clientX; ly = e.clientY;
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    window.cam.rotY += (e.clientX - lx) * 0.005;
+    window.cam.rotX = Math.max(-1.4, Math.min(1.4, window.cam.rotX + (e.clientY - ly) * 0.005));
+    lx = e.clientX; ly = e.clientY;
+  });
+  window.addEventListener('pointerup', function () { dragging = false; });
+  window.addEventListener('wheel', function (e) {
+    if (e.target.closest('.modal')) return;
+    window.cam.dist = Math.max(1.8, Math.min(14, window.cam.dist + e.deltaY * 0.004));
+  }, { passive: true });
+
+  function matMVP(aspect) {
+    var fov = 0.85, f = 1 / Math.tan(fov / 2), n = 0.1, far = 100;
+    var cx = Math.cos(window.cam.rotX), sx = Math.sin(window.cam.rotX);
+    var cy = Math.cos(window.cam.rotY), sy = Math.sin(window.cam.rotY);
+    var d = window.cam.dist;
+    return new Float32Array([
+      (f / aspect) * cy, f * sx * sy, -cx * sy, -cx * sy,
+      0, f * cx, sx, sx,
+      (f / aspect) * sy, -f * sx * cy, cx * cy, cx * cy,
+      0, 0, d - (2 * far * n) / (far - n), d
+    ]);
   }
-  function persp(fov, asp, n, f) {
-    var t = 1 / Math.tan(fov / 2), m = new Float32Array(16);
-    m[0] = t / asp; m[5] = t; m[10] = (f + n) / (n - f); m[11] = -1; m[14] = 2 * f * n / (n - f); return m;
-  }
-  function rotX(a) { var c = Math.cos(a), s = Math.sin(a); return new Float32Array([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]); }
-  function rotY(a) { var c = Math.cos(a), s = Math.sin(a); return new Float32Array([c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]); }
-  function trans3(x, y, z) { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]); }
-  function trans(z) { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, z, 1]); }
 
-  /* ---------- camera ---------- */
-  var FOV = 60 * Math.PI / 180;
-  var cam = { dist: 6.5, pitch: 0.95, yaw: 0 };
-  var ex = { on: false, dist: 5, pitch: 0.95, yaw: 0, px: 0, py: 0 };
-  var pan = { x: 0, y: 0 };
-  function clampD(d) { return Math.max(0.7, Math.min(18, d)); }
-  var drag = { on: false, x: 0, y: 0, yawOff: 0, pitchOff: 0 };
-  var DIVE_PERIOD = 56;               // seconds for one full dive & return
-  window.OLU = window.OLU || {};
-  window.OLU.mode = 'home';           // 'home' = auto dive, anything else = calm backdrop
-
-  addEventListener('pointerdown', function (e) {
-    if (ex.on || window.OLU.mode !== 'home') return;
-    if (e.target.closest('button,a,input,textarea,select,.card,.modal,.nav,.top')) return;
-    drag.on = true; drag.x = e.clientX; drag.y = e.clientY;
-  });
-  addEventListener('pointermove', function (e) {
-    if (!drag.on) return;
-    drag.yawOff += (e.clientX - drag.x) * 0.006;
-    drag.pitchOff = Math.max(-0.5, Math.min(0.5, drag.pitchOff + (e.clientY - drag.y) * 0.004));
-    drag.x = e.clientX; drag.y = e.clientY;
-  });
-  addEventListener('pointerup', function () { drag.on = false; });
-
-  var ptrs = {};
-  canvas.addEventListener('pointerdown', function (e) {
-    if (!ex.on) return; try { canvas.setPointerCapture(e.pointerId); } catch (x) {}
-    ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
-  });
-  canvas.addEventListener('pointermove', function (e) {
-    var p = ptrs[e.pointerId]; if (!ex.on || !p) return;
-    var ids = Object.keys(ptrs), nx = e.clientX, ny = e.clientY;
-    if (ids.length === 1) {
-      ex.yaw += (nx - p.x) * 0.008;
-      ex.pitch = Math.max(0.05, Math.min(1.5, ex.pitch + (ny - p.y) * 0.006));
-    } else {
-      var oid = ids.filter(function (i) { return String(i) !== String(e.pointerId); })[0], o = ptrs[oid];
-      var d0 = Math.hypot(p.x - o.x, p.y - o.y), d1 = Math.hypot(nx - o.x, ny - o.y);
-      if (d0 > 0 && d1 > 0) ex.dist = clampD(ex.dist * d0 / d1);
-      var s = ex.dist * Math.tan(FOV / 2) * 2 / innerHeight;
-      ex.px += (nx - p.x) * s / 2; ex.py -= (ny - p.y) * s / 2;
-    }
-    p.x = nx; p.y = ny;
-  });
-  function up(e) { delete ptrs[e.pointerId]; }
-  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
-  canvas.addEventListener('wheel', function (e) { if (!ex.on) return; e.preventDefault(); ex.dist = clampD(ex.dist * Math.exp(e.deltaY * 0.0012)); }, { passive: false });
-  window.OLU.explore = function (on) {
-    ex.on = !!on; ptrs = {};
-    if (on) { ex.dist = clampD(cam.dist); ex.pitch = cam.pitch; ex.yaw = cam.yaw; ex.px = 0; ex.py = 0; }
-    canvas.style.pointerEvents = on ? 'auto' : 'none'; canvas.style.touchAction = on ? 'none' : '';
-  };
-  window.OLU.zoom = function (f) { ex.dist = clampD(ex.dist * f); };
-  window.OLU.resetView = function () { ex.dist = 5; ex.pitch = 0.95; ex.px = 0; ex.py = 0; };
-
-  var W = 1, H = 1;
   function resize() {
-    var dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.5);
-    W = canvas.width = Math.floor(innerWidth * dpr);
-    H = canvas.height = Math.floor(innerHeight * dpr);
-    gl.viewport(0, 0, W, H);
+    var dpr = Math.min(2, devicePixelRatio || 1);
+    canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+    gl.viewport(0, 0, canvas.width, canvas.height);
   }
-  addEventListener('resize', resize); resize();
+  resize(); window.addEventListener('resize', resize);
 
-  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var t0 = performance.now(), last = t0;
+  var t0 = performance.now();
   function frame(now) {
-    requestAnimationFrame(frame);
-    if (document.hidden) return;
-    var t = (now - t0) / 1000, dt = Math.min(0.1, (now - last) / 1000); last = now;
-    var tDist, tPitch;
-    if (window.OLU.mode === 'home' && !reduce) {
-      var u = 0.5 - 0.5 * Math.cos(t / DIVE_PERIOD * Math.PI * 2);   // 0 far .. 1 close
-      u = Math.pow(u, 1.4);
-      tDist = 6.8 - 5.4 * u;
-      tPitch = 0.95 - 0.55 * u;
-    } else { tDist = 7.2; tPitch = 1.0; }
-    if (ex.on) { tDist = ex.dist; tPitch = ex.pitch; }
-    var k = 1 - Math.exp(-dt * (ex.on ? 9 : 1.6));
-    pan.x += ((ex.on ? ex.px : 0) - pan.x) * k; pan.y += ((ex.on ? ex.py : 0) - pan.y) * k;
-    cam.dist += (tDist - cam.dist) * k;
-    cam.pitch += (tPitch - cam.pitch) * k;
-    if (!drag.on) { drag.yawOff *= 1 - dt * 0.6; drag.pitchOff *= 1 - dt * 0.6; }
-    cam.yaw = ex.on ? ex.yaw : t * 0.03 + drag.yawOff;
-    var pitch = ex.on ? cam.pitch : cam.pitch + drag.pitchOff;
-
-    var mvp = mul(persp(FOV, W / H, 0.05, 60), mul(trans3(pan.x, pan.y, -cam.dist), mul(rotX(pitch), rotY(cam.yaw))));
-    gl.clearColor(0.012, 0.014, 0.03, 1); gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.disable(gl.DEPTH_TEST); gl.enable(gl.BLEND);
-
-    // stars (additive, behind the galaxy)
-    gl.blendFunc(gl.ONE, gl.ONE);
-    gl.useProgram(sProg);
-    gl.bindBuffer(gl.ARRAY_BUFFER, sBuf);
-    gl.enableVertexAttribArray(sLoc.pos); gl.vertexAttribPointer(sLoc.pos, 3, gl.FLOAT, false, 28, 0);
-    gl.enableVertexAttribArray(sLoc.col); gl.vertexAttribPointer(sLoc.col, 3, gl.FLOAT, false, 28, 12);
-    gl.enableVertexAttribArray(sLoc.seed); gl.vertexAttribPointer(sLoc.seed, 1, gl.FLOAT, false, 28, 24);
-    gl.uniformMatrix4fv(sLoc.mvp, false, mvp); gl.uniform1f(sLoc.time, t); gl.uniform1f(sLoc.px, Math.max(1, H / 760));
-    gl.drawArrays(gl.POINTS, 0, NS);
-    gl.disableVertexAttribArray(sLoc.pos); gl.disableVertexAttribArray(sLoc.col); gl.disableVertexAttribArray(sLoc.seed);
-
-    // particles (additive)
-    gl.blendFunc(gl.ONE, gl.ONE);
-    gl.useProgram(pProg);
-    gl.bindBuffer(gl.ARRAY_BUFFER, pBuf);
-    var B = 4;
-    gl.enableVertexAttribArray(loc.pos); gl.vertexAttribPointer(loc.pos, 3, gl.FLOAT, false, STRIDE * B, 0);
-    gl.enableVertexAttribArray(loc.col); gl.vertexAttribPointer(loc.col, 3, gl.FLOAT, false, STRIDE * B, 3 * B);
-    gl.enableVertexAttribArray(loc.size); gl.vertexAttribPointer(loc.size, 1, gl.FLOAT, false, STRIDE * B, 6 * B);
-    gl.uniformMatrix4fv(loc.mvp, false, mvp);
-    gl.uniform1f(loc.time, t);
-    gl.uniform1f(loc.dim, Math.max(0.3, Math.min(1, (cam.dist - 1.2) / 3.0)));
-    gl.uniform1f(loc.scale, (H / (2 * Math.tan(FOV / 2))) * 0.0085 * 2.2);
+    var t = (now - t0) * 0.001;
+    if (!dragging) window.cam.rotY += 0.0008;
+    gl.clearColor(0.02, 0.024, 0.05, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniformMatrix4fv(uMVP, false, matMVP(canvas.width / Math.max(1, canvas.height)));
+    gl.uniform1f(uTime, t);
+    gl.uniform1f(uScale, canvas.height * 0.012);
     gl.drawArrays(gl.POINTS, 0, N);
-
-    // black hole (dark ellipse + glowing rim), tilted with the disc
-    var focal = H / (2 * Math.tan(FOV / 2));
-    var rx = P.hole * 0.95 * focal / cam.dist;
-    var ry = rx * Math.max(0.12, Math.abs(Math.sin(pitch)));
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    gl.useProgram(hProg);
-    gl.disableVertexAttribArray(loc.pos); gl.disableVertexAttribArray(loc.col); gl.disableVertexAttribArray(loc.size);
-    gl.bindBuffer(gl.ARRAY_BUFFER, qBuf);
-    gl.enableVertexAttribArray(loc.hp); gl.vertexAttribPointer(loc.hp, 2, gl.FLOAT, false, 0, 0);
-    var th = Math.tan(FOV / 2);
-    gl.uniform2f(loc.hres, W / 2 * (1 + pan.x / (cam.dist * th * (W / H))) * 2, H / 2 * (1 + pan.y / (cam.dist * th)) * 2);
-    gl.uniform2f(loc.hr, rx, ry);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    gl.disableVertexAttribArray(loc.hp);
+    requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-
-  /* ---------- shooting stars (DOM, cheap) ---------- */
-  (function () {
-    if (reduce) return;
-    function shoot() {
-      if (!document.hidden) {
-        var d = document.createElement('div'); d.className = 'shoot';
-        d.style.left = (10 + Math.random() * 70) + 'vw'; d.style.top = (4 + Math.random() * 38) + 'vh';
-        d.style.setProperty('--len', (90 + Math.random() * 90) + 'px');
-        document.body.appendChild(d); setTimeout(function () { d.remove(); }, 1400);
-      }
-      setTimeout(shoot, 4500 + Math.random() * 7000);
-    }
-    setTimeout(shoot, 2500);
-  })();
 })();
 
-</script>
-<script>
-/* Our Little Universe — app logic.
-   Data lives in this browser (localStorage). If you run server.py, it is also saved to data.json
-   so two phones on the same Wi-Fi share one universe. */
 (function () {
-  'use strict';
-  var KEY = 'our-little-universe-v1';
-  var $ = function (s, r) { return (r || document).querySelector(s); };
-  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
-  var today = function () { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-  var fmt = function (d) { if (!d) return ''; var x = new Date(d + (d.length === 10 ? 'T12:00:00' : '')); return isNaN(x) ? d : x.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }); };
+  var DEFAULT_SUPABASE_URL = '';
+  var DEFAULT_SUPABASE_KEY = '';
 
-  /* ---------------- state ---------------- */
-  function blank() { return { v: 1, updatedAt: 0, settings: { me: 'Me', you: 'You', lock: '' }, letters: [], diary: [], moments: [], songs: [] }; }
-  function normalize(s) {
-    var b = blank(); s = s || {};
-    b.settings = Object.assign(b.settings, s.settings || {});
-    ['letters', 'diary', 'moments', 'songs'].forEach(function (k) { b[k] = Array.isArray(s[k]) ? s[k] : []; });
-    ['letters', 'diary', 'moments', 'songs'].forEach(function (k) { b[k].forEach(function (it) { if (!it.id) it.id = uid(); }); });
-    b.updatedAt = s.updatedAt || 0; return b;
-  }
-  var state;
-  try { state = normalize(JSON.parse(localStorage.getItem(KEY))); } catch (e) { state = blank(); }
-  if (!state.updatedAt) {
-    state.letters.push({ id: uid(), from: 'me', title: 'Welcome to our little universe', date: today(), created: Date.now(),
-      body: 'This is a small world just for us.\n\nWrite letters here, keep the days you never want to forget, save the conversations that made you laugh, and collect the songs that remind you of moments.\n\nTap the + button to add your first memory. ✦' });
-  }
-  var serverMode = false, saveTimer = null;
-  function ss(op,v){try{if(op==='get')return sessionStorage.getItem('olu-open')||window.__olu;if(op==='set'){window.__olu=v;sessionStorage.setItem('olu-open',v);}else{window.__olu='';sessionStorage.removeItem('olu-open');}}catch(e){if(op==='set')window.__olu=v;if(op==='del')window.__olu='';return window.__olu;}}
+  var cfg = {
+    url: localStorage.getItem('sb_url') || DEFAULT_SUPABASE_URL,
+    key: localStorage.getItem('sb_key') || DEFAULT_SUPABASE_KEY
+  };
 
-  function save(quiet) {
-    state.updatedAt = Date.now();
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Storage is full or blocked'); }
-    if (serverMode) { clearTimeout(saveTimer); saveTimer = setTimeout(push, 300); }
-  }
-  function push() {
-    fetch('api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) })
-      .catch(function () { badge('offline'); });
-  }
-  function badge(txt) { var b = $('#syncBadge'); if (!txt) { b.hidden = true; return; } b.hidden = false; b.textContent = txt; }
-  function initServer() {
-    fetch('api/data', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
-      serverMode = true; badge('● synced');
-      if (j && j.v && (j.updatedAt || 0) > state.updatedAt) { state = normalize(j); localStorage.setItem(KEY, JSON.stringify(state)); render(); checkLock(); }
-      else save();   // server empty (or ours is newer): publish ours with a fresh timestamp
-      setInterval(poll, 8000);
-    }).catch(function () { /* plain static mode: localStorage only */ });
-  }
-  function poll() {
-    if ($('.modal-bg')) return;
-    fetch('api/data', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
-      badge('● synced');
-      if (j && j.v && (j.updatedAt || 0) > state.updatedAt) { state = normalize(j); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} render(); }
-    }).catch(function () { badge('offline'); });
-  }
-
-  /* ---------------- helpers ---------------- */
-  function by(it) { return it.from ? '<span>by ' + esc(whoName(it.from)) + '</span>' : ''; }
-  function whoName(k) { return state.settings[k] || (k === 'you' ? 'You' : 'Me'); }
-  function toast(msg) { var t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 2200); }
-  var MOODS = ['😊', '😍', '🥹', '😢', '😴', '😡', '🤔', '✨'];
-
-  /* ---------------- sections ---------------- */
-  var SECTIONS = {
-    letters: {
-      title: 'Letters', sub: 'little letters between you and me', icon: '✉', add: 'Write a letter',
-      emptyT: 'No letters yet', emptyS: 'Write the first one. It can be two lines or two pages.',
-      fields: function () { return [
-        { k: 'from', label: 'From', t: 'who' },
-        { k: 'title', label: 'Title', t: 'text', ph: 'Dear you…' },
-        { k: 'body', label: 'Letter', t: 'area', rows: 4, ph: 'Say what you want to say…', req: true },
-        { k: 'date', label: 'Date', t: 'date' }]; },
-      card: function (it) {
-        return '<button class="card letter-card" data-open="letters:' + esc(it.id) + '"><span class="env">✉</span>' +
-          '<div class="meta"><span>From ' + esc(whoName(it.from)) + '</span><span>' + fmt(it.date) + '</span></div>' +
-          '<h3 dir="auto">' + esc(it.title || 'Untitled letter') + '</h3><div class="preview" dir="auto">' + esc(it.body) + '</div></button>';
-      },
-      detail: function (it) {
-        return '<div class="meta"><span>From ' + esc(whoName(it.from)) + '</span><span>' + fmt(it.date) + '</span></div>' +
-          '<h3 dir="auto">' + esc(it.title || 'Untitled letter') + '</h3><div class="full" dir="auto">' + esc(it.body) + '</div>';
-      }
-    },
-    diary: {
-      title: 'Diary', sub: 'school days, feelings, dreams and random things', icon: '☾', add: 'New entry',
-      emptyT: 'Your diary is empty', emptyS: 'Write about today. Even one sentence counts.',
-      filters: [['all', 'All'], ['school', 'School'], ['feelings', 'Feelings'], ['dreams', 'Dreams'], ['random', 'Random']],
-      fields: function () { return [
-        { k: 'from', label: 'Written by', t: 'who' },
-        { k: 'date', label: 'Date', t: 'date' },
-        { k: 'mood', label: 'Mood', t: 'mood' },
-        { k: 'tag', label: 'About', t: 'select', opts: [['school', 'School days'], ['feelings', 'Feelings'], ['dreams', 'Dreams'], ['random', 'Random things']] },
-        { k: 'title', label: 'Title', t: 'text', ph: 'Today was…' },
-        { k: 'body', label: 'Entry', t: 'area', rows: 4, ph: 'What happened? How did it feel?', req: true }]; },
-      card: function (it) {
-        return '<button class="card" data-open="diary:' + esc(it.id) + '"><div class="meta"><span>' + esc(it.mood || '') + '</span><span>' + fmt(it.date) + '</span><span class="tag">' + esc(it.tag || 'random') + '</span></div>' +
-          '<h3 dir="auto">' + esc(it.title || 'Untitled') + '</h3><div class="preview" dir="auto">' + esc(it.body) + '</div></button>';
-      },
-      detail: function (it) {
-        return '<div class="meta"><span>' + esc(it.mood || '') + '</span>' + by(it) + '<span>' + fmt(it.date) + '</span><span class="tag">' + esc(it.tag || 'random') + '</span></div>' +
-          '<h3 dir="auto">' + esc(it.title || 'Untitled') + '</h3><div class="full" dir="auto">' + esc(it.body) + '</div>';
-      }
-    },
-    moments: {
-      title: 'Moments', sub: 'funny conversations and things we never want to forget', icon: '❖', add: 'Save a moment',
-      emptyT: 'No moments saved', emptyS: 'Paste a funny chat, or write down a moment you want to keep forever.',
-      filters: [['all', 'All'], ['chat', 'Funny chats'], ['important', 'Important'], ['remember', "Don't forget"]],
-      fields: function () { return [
-        { k: 'from', label: 'Added by', t: 'who' },
-        { k: 'kind', label: 'Type', t: 'select', opts: [['chat', 'Funny conversation'], ['important', 'Important moment'], ['remember', "Something I don't want to forget"]] },
-        { k: 'title', label: 'Title', t: 'text', ph: 'The day we…' },
-        { k: 'body', label: 'What happened', t: 'area', rows: 5, req: true, ph: 'For a conversation, write one message per line like:\nMe: hello\nYou: hi!', hint: 'For a funny conversation, start each line with the name and a colon and it will show up as chat bubbles.' },
-        { k: 'date', label: 'Date', t: 'date' }]; },
-      kindName: { chat: 'funny chat', important: 'important', remember: "don't forget" },
-      card: function (it) {
-        return '<button class="card" data-open="moments:' + esc(it.id) + '"><div class="meta"><span class="tag">' + esc(SECTIONS.moments.kindName[it.kind] || 'moment') + '</span>' + by(it) + '<span>' + fmt(it.date) + '</span></div>' +
-          '<h3 dir="auto">' + esc(it.title || 'Untitled') + '</h3><div class="preview" dir="auto">' + esc(it.body) + '</div></button>';
-      },
-      detail: function (it) {
-        var head = '<div class="meta"><span class="tag">' + esc(SECTIONS.moments.kindName[it.kind] || 'moment') + '</span>' + by(it) + '<span>' + fmt(it.date) + '</span></div><h3 dir="auto">' + esc(it.title || 'Untitled') + '</h3>';
-        if (it.kind !== 'chat') return head + '<div class="full" dir="auto">' + esc(it.body) + '</div>';
-        var speakers = [], out = [], re = /^\s*([^:：\n]{1,24})[:：]\s*(.+)$/;
-        it.body.split('\n').forEach(function (line) {
-          if (!line.trim()) return;
-          var m = re.exec(line);
-          if (m) { var n = m[1].trim(); if (speakers.indexOf(n) < 0) speakers.push(n); out.push({ n: n, t: m[2] }); }
-          else if (out.length) out[out.length - 1].t += '\n' + line; else out.push({ n: '', t: line });
-        });
-        return head + '<div class="chat">' + out.map(function (o) {
-          var right = o.n && speakers.indexOf(o.n) % 2 === 1;
-          return '<div class="bub' + (right ? ' r' : '') + '" dir="auto">' + (o.n ? '<small>' + esc(o.n) + '</small>' : '') + esc(o.t) + '</div>';
-        }).join('') + '</div>';
-      }
-    },
-    songs: {
-      title: 'Songs', sub: 'songs that remind me of certain moments', icon: '♪', add: 'Add a song',
-      emptyT: 'No songs yet', emptyS: 'Add a song and the moment it takes you back to.',
-      fields: function () { return [
-        { k: 'from', label: 'Added by', t: 'who' },
-        { k: 'title', label: 'Song', t: 'text', ph: 'Song name', req: true },
-        { k: 'artist', label: 'Artist', t: 'text', ph: 'Artist' },
-        { k: 'memory', label: 'It reminds me of…', t: 'area', rows: 3, ph: 'The night we…' },
-        { k: 'url', label: 'Link (YouTube / Spotify / anything, optional)', t: 'url', ph: 'https://…' },
-        { k: 'date', label: 'Date', t: 'date' }]; },
-      card: function (it) {
-        return '<button class="card song-card" data-open="songs:' + esc(it.id) + '"><span class="vinyl"></span><div style="min-width:0"><h3 dir="auto" style="margin:0">' + esc(it.title) + '</h3>' +
-          '<div class="meta"><span>' + esc(it.artist || '') + '</span>' + by(it) + '<span>' + fmt(it.date) + '</span></div>' +
-          (it.memory ? '<div class="preview" dir="auto" style="-webkit-line-clamp:2">' + esc(it.memory) + '</div>' : '') + '</div></button>';
-      },
-      detail: function (it) {
-        var safe = /^https?:\/\//i.test(it.url || '') ? it.url : '';
-        return '<div style="display:flex;gap:14px;align-items:center"><span class="vinyl"></span><div><h3 dir="auto" style="margin:0">' + esc(it.title) + '</h3><div class="meta"><span>' + esc(it.artist || '') + '</span>' + by(it) + '<span>' + fmt(it.date) + '</span></div></div></div>' +
-          (it.memory ? '<div class="full" dir="auto">' + esc(it.memory) + '</div>' : '') +
-          (safe ? '<p><a class="btn primary" style="display:inline-block;text-decoration:none" href="' + esc(safe) + '" target="_blank" rel="noopener noreferrer">▶ Listen</a></p>' : '');
-      }
+  var sb = null;
+  function initSupabase() {
+    var badge = document.getElementById('syncBadge');
+    if (cfg.url && cfg.key && window.supabase) {
+      try {
+        sb = window.supabase.createClient(cfg.url, cfg.key);
+        badge.textContent = 'Supabase';
+        return;
+      } catch (e) {}
     }
-  };
-  var ORDER = ['letters', 'diary', 'moments', 'songs'];
-  var filters = { diary: 'all', moments: 'all' };
-  var view = 'home';
-  var clean = true, freeOn = false;
-  try { clean = localStorage.getItem('olu-clean') !== '0'; } catch (e) {}
-  function applyFree() {
-    var free = view === 'home' && clean;
-    document.body.classList.toggle('free', free);
-    if (free !== freeOn) { freeOn = free; if (window.OLU && OLU.explore) OLU.explore(free); }
+    sb = null;
+    badge.textContent = 'Local';
+  }
+  initSupabase();
+
+  var state = { view: 'home', items: [] };
+  var viewEl = document.getElementById('view');
+  var modalRoot = document.getElementById('modalRoot');
+
+  function toast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('on');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove('on'); }, 2400);
   }
 
-  /* ---------------- render ---------------- */
-  function sorted(key) {
-    return state[key].slice().sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')) || (b.created || 0) - (a.created || 0); });
-  }
-  function homeHTML() {
-    var tiles = ORDER.map(function (k) {
-      var S = SECTIONS[k], items = sorted(k), n = items.length, l = items[0];
-      return '<button class="tile" data-go="' + k + '"><div class="ic">' + S.icon + '</div><h3>' + S.title + '</h3><small>' + n + (n === 1 ? ' entry' : ' entries') + '</small>' +
-        '<div class="last" dir="auto">' + (l ? esc(l.title || l.body || '').slice(0, 60) : 'Nothing yet') + '</div></button>';
-    }).join('');
-    return '<section class="hero"><h1>Our Little<em>Universe</em></h1><p>a private little world, just for you and me</p>' +
-      '<div class="code"><b>const</b> universe = { us: <b>true</b> };</div></section><div class="tiles">' + tiles + '</div>';
-  }
-  function sectionHTML(k) {
-    var S = SECTIONS[k], items = sorted(k), f = filters[k];
-    if (f && f !== 'all') items = items.filter(function (i) { return (k === 'diary' ? i.tag : i.kind) === f; });
-    var chips = S.filters ? '<div class="chips">' + S.filters.map(function (c) { return '<button class="chip' + (c[0] === (f || 'all') ? ' on' : '') + '" data-filter="' + c[0] + '">' + c[1] + '</button>'; }).join('') + '</div>' : '';
-    return '<div class="page-head"><h2>' + S.title + '</h2><p>' + S.sub + '</p></div>' +
-      (chips ? '<div class="bar">' + chips + '</div>' : '') +
-      (items.length ? '<div class="list">' + items.map(S.card).join('') + '</div>' :
-        '<div class="empty"><b>' + S.emptyT + '</b>' + S.emptyS + '</div>');
-  }
-  function render() {
-    document.body.dataset.view = view;
-    if (window.OLU) window.OLU.mode = view === 'home' ? 'home' : 'calm';
-    $$('#nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.go === view); });
-    $('#view').innerHTML = view === 'home' ? (clean ? '' : homeHTML()) : sectionHTML(view);
-    applyFree();
-    window.scrollTo(0, 0);
-  }
-  function go(v) { if (v !== 'home' && !SECTIONS[v]) v = 'home'; view = v; if (location.hash !== '#' + v) try { history.replaceState(null, '', '#' + v); } catch (e) {} render(); }
-
-  /* ---------------- modal ---------------- */
-  function openModal(html, onMount) {
-    closeModal();
-    var bg = document.createElement('div'); bg.className = 'modal-bg';
-    bg.innerHTML = '<div class="modal" role="dialog" aria-modal="true"><button type="button" class="expand" data-expand aria-label="Enlarge or shrink" title="Enlarge / shrink">⤢</button>' + html + '</div>';
-    bg.addEventListener('mousedown', function (e) { if (e.target === bg) closeModal(); });
-    $('#modalRoot').appendChild(bg);
-    var mm = $('.modal', bg), big = false;
-    try { big = localStorage.getItem('olu-big') === '1'; } catch (e) {}
-    function setBig(v) { big = v; mm.classList.toggle('big', v); mm.querySelector('[data-expand]').textContent = v ? '⤡' : '⤢'; try { localStorage.setItem('olu-big', v ? '1' : '0'); } catch (e) {} }
-    mm.querySelector('[data-expand]').onclick = function () { setBig(!big); };
-    setBig(big);
-    if (onMount) onMount(mm);
-  }
-  function closeModal() { $('#modalRoot').innerHTML = ''; }
-
-  function openDetail(k, id) {
-    var S = SECTIONS[k], it = state[k].filter(function (x) { return x.id === id; })[0]; if (!it) return;
-    openModal(S.detail(it) + '<div class="row"><button class="btn danger" data-del>Delete</button><span class="grow"></span><button class="btn" data-edit>Edit</button><button class="btn primary" data-close>Close</button></div>', function (m) {
-      m.querySelector('[data-close]').onclick = closeModal;
-      m.querySelector('[data-edit]').onclick = function () { openEditor(k, it); };
-      m.querySelector('[data-del]').onclick = function () {
-        if (!confirm('Delete this forever?')) return;
-        state[k] = state[k].filter(function (x) { return x.id !== id; }); save(); closeModal(); render(); toast('Deleted');
-      };
+  function esc(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
     });
   }
 
-  function openEditor(k, item) {
-    var S = SECTIONS[k], editing = !!item, it = item || {};
-    var defaults = { date: today(), from: state.settings.lastWho || 'me', mood: '😊', tag: filters.diary && filters.diary !== 'all' && k === 'diary' ? filters.diary : 'random', kind: filters.moments && filters.moments !== 'all' && k === 'moments' ? filters.moments : 'chat' };
-    var html = '<h3>' + (editing ? 'Edit' : S.add) + '</h3><form id="ef" autocomplete="off">';
-    S.fields().forEach(function (f) {
-      var v = it[f.k] != null ? it[f.k] : (defaults[f.k] != null ? defaults[f.k] : '');
-      if (f.t === 'mood') {
-        html += '<label class="f">' + f.label + '</label><div class="moods" data-mood>' + MOODS.map(function (m) { return '<button type="button" class="' + (m === v ? 'on' : '') + '" data-m="' + m + '">' + m + '</button>'; }).join('') + '</div><input type="hidden" name="mood" value="' + esc(v) + '">';
-      } else if (f.t === 'select' || f.t === 'who') {
-        var opts = f.t === 'who' ? [['me', whoName('me')], ['you', whoName('you')]] : f.opts;
-        html += '<label class="f">' + f.label + '<select name="' + f.k + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></label>';
-      } else if (f.t === 'area') {
-        html += '<label class="f">' + f.label + '<textarea name="' + f.k + '" rows="' + (f.rows || 6) + '" dir="auto" placeholder="' + esc(f.ph || '') + '"' + (f.req ? ' required' : '') + '>' + esc(v) + '</textarea></label>' + (f.hint ? '<div class="hint">' + f.hint + '</div>' : '');
-      } else {
-        html += '<label class="f">' + f.label + '<input name="' + f.k + '" type="' + (f.t === 'date' ? 'date' : f.t === 'url' ? 'url' : 'text') + '" value="' + esc(v) + '" dir="auto" placeholder="' + esc(f.ph || '') + '"' + (f.req ? ' required' : '') + '></label>';
-      }
-    });
-    html += '<div class="row"><span class="grow"></span><button type="button" class="btn" data-cancel>Cancel</button><button class="btn primary" type="submit">Save</button></div></form>';
-    openModal(html, function (m) {
-      m.querySelector('[data-cancel]').onclick = function () { editing ? openDetail(k, it.id) : closeModal(); };
-      $$('[data-mood] button', m).forEach(function (b) {
-        b.onclick = function () { $$('[data-mood] button', m).forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on'); m.querySelector('input[name=mood]').value = b.dataset.m; };
-      });
-      m.querySelector('#ef').onsubmit = function (e) {
-        e.preventDefault();
-        var fd = new FormData(e.target), obj = {};
-        S.fields().forEach(function (f) { obj[f.k] = String(fd.get(f.k) || '').trim(); });
-        if (obj.from) state.settings.lastWho = obj.from;
-        if (editing) Object.assign(it, obj); else { obj.id = uid(); obj.created = Date.now(); state[k].push(obj); }
-        save(); closeModal(); render(); toast('Saved ✦');
-      };
-      var first = m.querySelector('input[type=text],textarea'); if (first && !editing) setTimeout(function () { first.focus(); }, 60);
-    });
+  function fmtDate(iso) {
+    if (!iso) return 'Just now';
+    try {
+      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) { return ''; }
   }
 
-  /* ---------------- settings, lock, backup ---------------- */
-  function hash(s) { var a = 5381, b = 52711; s = 'olu|' + s; for (var i = 0; i < s.length; i++) { var n = s.charCodeAt(i); a = (((a << 5) + a) ^ n) >>> 0; b = (((b << 5) + b) + n * 31) >>> 0; } return a.toString(36) + b.toString(36); }
-  function checkLock() {
-    var locked = state.settings.lock && ss('get') !== state.settings.lock;
-    $('#lock').hidden = !locked; if (locked) setTimeout(function () { $('#lockInput').focus(); }, 50);
-  }
-  $('#lockForm').onsubmit = function (e) {
-    e.preventDefault();
-    if (hash($('#lockInput').value) === state.settings.lock) { ss('set',state.settings.lock); $('#lockInput').value = ''; $('#lockErr').textContent = ''; $('#lock').hidden = true; }
-    else { $('#lockErr').textContent = 'Not quite. Try again.'; $('#lockInput').select(); }
-  };
-
-  function openSettings() {
-    var st = state.settings;
-    openModal('<h3>Settings</h3><form id="sf" autocomplete="off">' +
-      '<label class="f">Your name<input name="me" value="' + esc(st.me) + '" dir="auto"></label>' +
-      '<label class="f">Their name<input name="you" value="' + esc(st.you) + '" dir="auto"></label>' +
-      '<label class="f">Passcode (optional, leave empty for none)<input name="pass" type="password" inputmode="numeric" placeholder="' + (st.lock ? 'set — type a new one to change' : 'e.g. 1234') + '"></label>' +
-      '<div class="hint">The passcode is a light lock on the screen, not strong encryption.</div>' +
-      '<div class="hint">Sync: ' + (serverMode ? 'connected to server.py — both of you share the same data.' : 'this browser only. Run server.py to share between two phones.') + '</div>' +
-      '<div class="row"><button type="button" class="btn" data-export>Export backup</button><label class="btn" style="cursor:pointer">Import<input type="file" accept="application/json" data-import hidden></label>' +
-      (st.lock ? '<button type="button" class="btn" data-lock>Lock now</button>' : '') +
-      '<span class="grow"></span><button class="btn primary" type="submit">Save</button></div></form>', function (m) {
-      m.querySelector('#sf').onsubmit = function (e) {
-        e.preventDefault(); var fd = new FormData(e.target);
-        state.settings.me = String(fd.get('me') || '').trim() || 'Me';
-        state.settings.you = String(fd.get('you') || '').trim() || 'You';
-        var p = String(fd.get('pass') || '');
-        if (p) { state.settings.lock = hash(p); ss('set',state.settings.lock); }
-        save(); closeModal(); render(); toast('Saved ✦');
-      };
-      m.querySelector('[data-export]').onclick = function () {
-        var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
-        a.download = 'our-little-universe-' + today() + '.json'; document.body.appendChild(a); a.click(); a.remove();
-      };
-      m.querySelector('[data-import]').onchange = function (e) {
-        var f = e.target.files[0]; if (!f) return; var r = new FileReader();
-        r.onload = function () { try { var j = JSON.parse(r.result); if (!j || !j.v) throw 0; if (!confirm('Replace everything with this backup?')) return; state = normalize(j); save(); closeModal(); render(); toast('Backup restored'); } catch (x) { toast('That file is not a valid backup'); } };
-        r.readAsText(f);
-      };
-      var lk = m.querySelector('[data-lock]'); if (lk) lk.onclick = function () { ss('del'); closeModal(); checkLock(); };
-      if (st.lock) { var h = document.createElement('button'); h.type = 'button'; h.className = 'btn'; h.textContent = 'Remove passcode';
-        h.onclick = function () { if (confirm('Remove the passcode?')) { state.settings.lock = ''; save(); closeModal(); toast('Passcode removed'); } };
-        m.querySelector('.row').insertBefore(h, m.querySelector('.row .grow')); }
-    });
-  }
-
-  /* ---------------- events ---------------- */
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-go],[data-add],[data-open],[data-filter],[data-write],[data-x]'); if (!t) return;
-    if (t.hasAttribute('data-write')) openWrite();
-    else if (t.dataset.x) xAction(t.dataset.x);
-    else if (t.dataset.go) go(t.dataset.go);
-    else if (t.dataset.add) openEditor(t.dataset.add);
-    else if (t.dataset.open) { var p = t.dataset.open.split(':'); openDetail(p[0], p[1]); }
-    else if (t.dataset.filter) { filters[view] = t.dataset.filter; render(); }
-  });
-  function openWrite() {
-    if (SECTIONS[view]) return openEditor(view);
-    openModal('<h3>Write something</h3><div class="chooser">' + ORDER.map(function (k) {
-      return '<button class="tile" data-add="' + k + '"><div class="ic">' + SECTIONS[k].icon + '</div><h3 style="font-size:1.05rem">' + SECTIONS[k].title + '</h3></button>';
-    }).join('') + '</div><div class="row"><span class="grow"></span><button class="btn" data-closechooser>Cancel</button></div>', function (m) {
-      m.querySelector('[data-closechooser]').onclick = closeModal;
-    });
-  }
-  function setExplore(on) {
-    document.body.classList.toggle('explore', on); $('#exploreBar').hidden = !on;
-    if (!freeOn && window.OLU && OLU.explore) OLU.explore(on);
-  }
-  function xAction(x) {
-    if (!window.OLU || !OLU.zoom) { if (x === 'done') setExplore(false); return; }
-    if (x === 'in') OLU.zoom(0.78); else if (x === 'out') OLU.zoom(1.28);
-    else if (x === 'reset') OLU.resetView(); else if (x === 'done') setExplore(false);
-  }
-  $('#btnClean').onclick = function () { clean = !clean; try { localStorage.setItem('olu-clean', clean ? '1' : '0'); } catch (e) {} go('home'); render(); toast(clean ? 'Clean view' : 'Title and boxes shown'); };
-  $('#btnExplore').onclick = function () { setExplore(true); };
-  $('#btnSettings').onclick = openSettings;
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeModal(); if (document.body.classList.contains('explore')) setExplore(false); } });
-  addEventListener('hashchange', function () { go(location.hash.slice(1) || 'home'); });
-
-  view = (location.hash.slice(1) in SECTIONS) ? location.hash.slice(1) : 'home';
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-  render(); checkLock(); initServer();
-})();
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const SUPABASE_URL = 'https://biimayxczduxvagdxllz.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_gailki0S04-BHT-DGGHFPA_nwmR7WM7';
-
-  export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
-
-</script>
-</body>
-</html>
+  async function fetchAll() {
+    if (sb) {
+      var res = await sb.from('letters').select('*').order('created_at', { ascending: false });
+      if
