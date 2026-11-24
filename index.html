@@ -859,6 +859,14 @@ body.explore .freehint{opacity:0}
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   render(); checkLock(); initServer();
 })();
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const SUPABASE_URL = 'https://biimayxczduxvagdxllz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_gailki0S04-BHT-DGGHFPA_nwmR7WM7';
+
+  export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 
 </script>
 </body>
