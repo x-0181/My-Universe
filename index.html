@@ -171,7 +171,6 @@ body.explore .freehint{opacity:0}
 .nav button.write i{display:flex;align-items:center;justify-content:center;font-size:18px}
 .nav button.write svg{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nav button.write:active{background:rgba(255,160,110,.12)}
-
 </style>
 </head>
 <body data-view="home">
@@ -221,9 +220,6 @@ body.explore .freehint{opacity:0}
 </div>
 
 <script>
-/* Our Little Universe — spiral galaxy with a black hole (raw WebGL, no libraries).
-   Inspired by the "JavaScript Animation" galaxy: particles on spiral branches,
-   orange/red core fading to blue edges, camera slowly dives toward the hole and back. */
 (function () {
   'use strict';
   var canvas = document.getElementById('galaxy');
@@ -237,13 +233,12 @@ body.explore .freehint{opacity:0}
   var P = { radius: 4.6, branches: 3, spin: 1.15, randomness: 0.5, power: 2.6, hole: 0.34 };
   var INSIDE = [1.0, 0.36, 0.06], OUTSIDE = [0.22, 0.48, 1.0];
 
-  /* ---------- particles ---------- */
   var STRIDE = 7, data = new Float32Array(N * STRIDE);
   function rnd() { return Math.random(); }
   function signedPow() { return Math.pow(rnd(), P.power) * (rnd() < 0.5 ? 1 : -1); }
   for (var i = 0; i < N; i++) {
     var o = i * STRIDE, x, y, z, r, mix;
-    if (i < N * 0.06) {                         // faint far stars (sphere shell)
+    if (i < N * 0.06) {
       var u = rnd() * 2 - 1, t = rnd() * Math.PI * 2, s = Math.sqrt(1 - u * u), R = 7 + rnd() * 9;
       x = s * Math.cos(t) * R; y = u * R; z = s * Math.sin(t) * R; r = 9; mix = 1;
       data[o + 6] = 0.5 + rnd() * 0.9;
@@ -307,7 +302,6 @@ body.explore .freehint{opacity:0}
     ' gl_FragColor=vec4(col*(1.0-core),core);}'
   );
 
-  /* ---------- twinkling star field (far shell around everything) ---------- */
   var NS = mobile ? 2200 : 4200, sd = new Float32Array(NS * 7), pal = [[1, 1, 1], [0.7, 0.8, 1], [1, 0.9, 0.7], [1, 0.75, 0.8], [0.75, 1, 1]];
   for (var s = 0; s < NS; s++) {
     var uu = rnd() * 2 - 1, tt = rnd() * Math.PI * 2, ss = Math.sqrt(1 - uu * uu), RR = 14 + rnd() * 18, cc = pal[(rnd() * pal.length) | 0], b = 0.35 + rnd() * 0.65, q = s * 7;
@@ -345,7 +339,6 @@ body.explore .freehint{opacity:0}
     hr: gl.getUniformLocation(hProg, 'uR')
   };
 
-  /* ---------- tiny matrix helpers (column-major) ---------- */
   function mul(a, b) {
     var o = new Float32Array(16);
     for (var c = 0; c < 4; c++) for (var r = 0; r < 4; r++) {
@@ -360,18 +353,16 @@ body.explore .freehint{opacity:0}
   function rotX(a) { var c = Math.cos(a), s = Math.sin(a); return new Float32Array([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]); }
   function rotY(a) { var c = Math.cos(a), s = Math.sin(a); return new Float32Array([c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]); }
   function trans3(x, y, z) { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]); }
-  function trans(z) { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, z, 1]); }
 
-  /* ---------- camera ---------- */
   var FOV = 60 * Math.PI / 180;
   var cam = { dist: 6.5, pitch: 0.95, yaw: 0 };
   var ex = { on: false, dist: 5, pitch: 0.95, yaw: 0, px: 0, py: 0 };
   var pan = { x: 0, y: 0 };
   function clampD(d) { return Math.max(0.7, Math.min(18, d)); }
   var drag = { on: false, x: 0, y: 0, yawOff: 0, pitchOff: 0 };
-  var DIVE_PERIOD = 56;               // seconds for one full dive & return
+  var DIVE_PERIOD = 56;
   window.OLU = window.OLU || {};
-  window.OLU.mode = 'home';           // 'home' = auto dive, anything else = calm backdrop
+  window.OLU.mode = 'home';
 
   addEventListener('pointerdown', function (e) {
     if (ex.on || window.OLU.mode !== 'home') return;
@@ -434,7 +425,7 @@ body.explore .freehint{opacity:0}
     var t = (now - t0) / 1000, dt = Math.min(0.1, (now - last) / 1000); last = now;
     var tDist, tPitch;
     if (window.OLU.mode === 'home' && !reduce) {
-      var u = 0.5 - 0.5 * Math.cos(t / DIVE_PERIOD * Math.PI * 2);   // 0 far .. 1 close
+      var u = 0.5 - 0.5 * Math.cos(t / DIVE_PERIOD * Math.PI * 2);
       u = Math.pow(u, 1.4);
       tDist = 6.8 - 5.4 * u;
       tPitch = 0.95 - 0.55 * u;
@@ -452,7 +443,6 @@ body.explore .freehint{opacity:0}
     gl.clearColor(0.012, 0.014, 0.03, 1); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.disable(gl.DEPTH_TEST); gl.enable(gl.BLEND);
 
-    // stars (additive, behind the galaxy)
     gl.blendFunc(gl.ONE, gl.ONE);
     gl.useProgram(sProg);
     gl.bindBuffer(gl.ARRAY_BUFFER, sBuf);
@@ -463,7 +453,6 @@ body.explore .freehint{opacity:0}
     gl.drawArrays(gl.POINTS, 0, NS);
     gl.disableVertexAttribArray(sLoc.pos); gl.disableVertexAttribArray(sLoc.col); gl.disableVertexAttribArray(sLoc.seed);
 
-    // particles (additive)
     gl.blendFunc(gl.ONE, gl.ONE);
     gl.useProgram(pProg);
     gl.bindBuffer(gl.ARRAY_BUFFER, pBuf);
@@ -477,7 +466,6 @@ body.explore .freehint{opacity:0}
     gl.uniform1f(loc.scale, (H / (2 * Math.tan(FOV / 2))) * 0.0085 * 2.2);
     gl.drawArrays(gl.POINTS, 0, N);
 
-    // black hole (dark ellipse + glowing rim), tilted with the disc
     var focal = H / (2 * Math.tan(FOV / 2));
     var rx = P.hole * 0.95 * focal / cam.dist;
     var ry = rx * Math.max(0.12, Math.abs(Math.sin(pitch)));
@@ -494,7 +482,6 @@ body.explore .freehint{opacity:0}
   }
   requestAnimationFrame(frame);
 
-  /* ---------- shooting stars (DOM, cheap) ---------- */
   (function () {
     if (reduce) return;
     function shoot() {
@@ -509,15 +496,16 @@ body.explore .freehint{opacity:0}
     setTimeout(shoot, 2500);
   })();
 })();
-
 </script>
+
 <script>
-/* Our Little Universe — app logic.
-   Data lives in this browser (localStorage). If you run server.py, it is also saved to data.json
-   so two phones on the same Wi-Fi share one universe. */
 (function () {
   'use strict';
   var KEY = 'our-little-universe-v1';
+  var SB_URL = 'https://biimayxczduxvagdxllz.supabase.co';
+  var SB_KEY = 'sb_publishable_gailki0S04-BHT-DGGHFPA_nwmR7WM7';
+  var SB_ROW_ID = 'main';
+
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -525,57 +513,122 @@ body.explore .freehint{opacity:0}
   var today = function () { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   var fmt = function (d) { if (!d) return ''; var x = new Date(d + (d.length === 10 ? 'T12:00:00' : '')); return isNaN(x) ? d : x.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }); };
 
-  /* ---------------- state ---------------- */
   function blank() { return { v: 1, updatedAt: 0, settings: { me: 'Me', you: 'You', lock: '' }, letters: [], diary: [], moments: [], songs: [] }; }
   function normalize(s) {
     var b = blank(); s = s || {};
     b.settings = Object.assign(b.settings, s.settings || {});
     ['letters', 'diary', 'moments', 'songs'].forEach(function (k) { b[k] = Array.isArray(s[k]) ? s[k] : []; });
     ['letters', 'diary', 'moments', 'songs'].forEach(function (k) { b[k].forEach(function (it) { if (!it.id) it.id = uid(); }); });
-    b.updatedAt = s.updatedAt || 0; return b;
+    b.updatedAt = Number(s.updatedAt || 0); return b;
   }
+
   var state;
   try { state = normalize(JSON.parse(localStorage.getItem(KEY))); } catch (e) { state = blank(); }
   if (!state.updatedAt) {
     state.letters.push({ id: uid(), from: 'me', title: 'Welcome to our little universe', date: today(), created: Date.now(),
       body: 'This is a small world just for us.\n\nWrite letters here, keep the days you never want to forget, save the conversations that made you laugh, and collect the songs that remind you of moments.\n\nTap the + button to add your first memory. ✦' });
   }
-  var serverMode = false, saveTimer = null;
-  function ss(op,v){try{if(op==='get')return sessionStorage.getItem('olu-open')||window.__olu;if(op==='set'){window.__olu=v;sessionStorage.setItem('olu-open',v);}else{window.__olu='';sessionStorage.removeItem('olu-open');}}catch(e){if(op==='set')window.__olu=v;if(op==='del')window.__olu='';return window.__olu;}}
+
+  var cloudReady = false, saveTimer = null;
+  function ss(op, v) { try { if (op === 'get') return sessionStorage.getItem('olu-open') || window.__olu; if (op === 'set') { window.__olu = v; sessionStorage.setItem('olu-open', v); } else { window.__olu = ''; sessionStorage.removeItem('olu-open'); } } catch (e) { if (op === 'set') window.__olu = v; if (op === 'del') window.__olu = ''; return window.__olu; } }
+  function badge(txt) { var b = $('#syncBadge'); if (!b) return; if (!txt) { b.hidden = true; return; } b.hidden = false; b.textContent = txt; }
+
+  function sbHeaders() {
+    return {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=representation'
+    };
+  }
+
+  function sbFetchRow() {
+    var url = SB_URL + '/rest/v1/universe_data?id=eq.' + encodeURIComponent(SB_ROW_ID) + '&select=id,payload,updated_at';
+    return fetch(url, { cache: 'no-store', headers: sbHeaders() }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function sbPushRow(snap) {
+    var payloadObj = snap || state;
+    var url = SB_URL + '/rest/v1/universe_data?on_conflict=id';
+    return fetch(url, {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify([{
+        id: SB_ROW_ID,
+        payload: payloadObj,
+        updated_at: Number(payloadObj.updatedAt || Date.now())
+      }])
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      cloudReady = true;
+      badge('● supabase');
+    }).catch(function () {
+      badge('offline');
+    });
+  }
 
   function save(quiet) {
     state.updatedAt = Date.now();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Storage is full or blocked'); }
-    if (serverMode) { clearTimeout(saveTimer); saveTimer = setTimeout(push, 300); }
-  }
-  function push() {
-    fetch('api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) })
-      .catch(function () { badge('offline'); });
-  }
-  function badge(txt) { var b = $('#syncBadge'); if (!txt) { b.hidden = true; return; } b.hidden = false; b.textContent = txt; }
-  function initServer() {
-    fetch('api/data', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
-      serverMode = true; badge('● synced');
-      if (j && j.v && (j.updatedAt || 0) > state.updatedAt) { state = normalize(j); localStorage.setItem(KEY, JSON.stringify(state)); render(); checkLock(); }
-      else save();   // server empty (or ours is newer): publish ours with a fresh timestamp
-      setInterval(poll, 8000);
-    }).catch(function () { /* plain static mode: localStorage only */ });
-  }
-  function poll() {
-    if ($('.modal-bg')) return;
-    fetch('api/data', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
-      badge('● synced');
-      if (j && j.v && (j.updatedAt || 0) > state.updatedAt) { state = normalize(j); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} render(); }
-    }).catch(function () { badge('offline'); });
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { sbPushRow(state); }, 250);
   }
 
-  /* ---------------- helpers ---------------- */
+  function applyRemoteIfNewer(remotePayload, remoteUpdatedAt) {
+    var norm = normalize(remotePayload);
+    var rTime = Math.max(Number(remoteUpdatedAt || 0), Number(norm.updatedAt || 0));
+    if (norm.v && rTime > Number(state.updatedAt || 0)) {
+      norm.updatedAt = rTime;
+      state = norm;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      render();
+      checkLock();
+      return true;
+    }
+    return false;
+  }
+
+  function initCloud() {
+    badge('syncing…');
+    sbFetchRow().then(function (rows) {
+      cloudReady = true;
+      badge('● supabase');
+      if (Array.isArray(rows) && rows.length > 0 && rows[0].payload) {
+        var changed = applyRemoteIfNewer(rows[0].payload, rows[0].updated_at);
+        if (!changed && state.updatedAt > Number(rows[0].updated_at || 0)) sbPushRow(state);
+      } else {
+        if (!state.updatedAt) state.updatedAt = Date.now();
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+        sbPushRow(state);
+      }
+      setInterval(pollCloud, 8000);
+    }).catch(function () {
+      badge('offline');
+      setInterval(pollCloud, 10000);
+    });
+  }
+
+  function pollCloud() {
+    if ($('.modal-bg')) return;
+    sbFetchRow().then(function (rows) {
+      cloudReady = true;
+      badge('● supabase');
+      if (Array.isArray(rows) && rows.length > 0 && rows[0].payload) {
+        applyRemoteIfNewer(rows[0].payload, rows[0].updated_at);
+      }
+    }).catch(function () {
+      badge('offline');
+    });
+  }
+
   function by(it) { return it.from ? '<span>by ' + esc(whoName(it.from)) + '</span>' : ''; }
   function whoName(k) { return state.settings[k] || (k === 'you' ? 'You' : 'Me'); }
   function toast(msg) { var t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 2200); }
   var MOODS = ['😊', '😍', '🥹', '😢', '😴', '😡', '🤔', '✨'];
 
-  /* ---------------- sections ---------------- */
   var SECTIONS = {
     letters: {
       title: 'Letters', sub: 'little letters between you and me', icon: '✉', add: 'Write a letter',
@@ -680,7 +733,6 @@ body.explore .freehint{opacity:0}
     if (free !== freeOn) { freeOn = free; if (window.OLU && OLU.explore) OLU.explore(free); }
   }
 
-  /* ---------------- render ---------------- */
   function sorted(key) {
     return state[key].slice().sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')) || (b.created || 0) - (a.created || 0); });
   }
@@ -712,7 +764,6 @@ body.explore .freehint{opacity:0}
   }
   function go(v) { if (v !== 'home' && !SECTIONS[v]) v = 'home'; view = v; if (location.hash !== '#' + v) try { history.replaceState(null, '', '#' + v); } catch (e) {} render(); }
 
-  /* ---------------- modal ---------------- */
   function openModal(html, onMount) {
     closeModal();
     var bg = document.createElement('div'); bg.className = 'modal-bg';
@@ -775,7 +826,6 @@ body.explore .freehint{opacity:0}
     });
   }
 
-  /* ---------------- settings, lock, backup ---------------- */
   function hash(s) { var a = 5381, b = 52711; s = 'olu|' + s; for (var i = 0; i < s.length; i++) { var n = s.charCodeAt(i); a = (((a << 5) + a) ^ n) >>> 0; b = (((b << 5) + b) + n * 31) >>> 0; } return a.toString(36) + b.toString(36); }
   function checkLock() {
     var locked = state.settings.lock && ss('get') !== state.settings.lock;
@@ -783,7 +833,7 @@ body.explore .freehint{opacity:0}
   }
   $('#lockForm').onsubmit = function (e) {
     e.preventDefault();
-    if (hash($('#lockInput').value) === state.settings.lock) { ss('set',state.settings.lock); $('#lockInput').value = ''; $('#lockErr').textContent = ''; $('#lock').hidden = true; }
+    if (hash($('#lockInput').value) === state.settings.lock) { ss('set', state.settings.lock); $('#lockInput').value = ''; $('#lockErr').textContent = ''; $('#lock').hidden = true; }
     else { $('#lockErr').textContent = 'Not quite. Try again.'; $('#lockInput').select(); }
   };
 
@@ -794,7 +844,7 @@ body.explore .freehint{opacity:0}
       '<label class="f">Their name<input name="you" value="' + esc(st.you) + '" dir="auto"></label>' +
       '<label class="f">Passcode (optional, leave empty for none)<input name="pass" type="password" inputmode="numeric" placeholder="' + (st.lock ? 'set — type a new one to change' : 'e.g. 1234') + '"></label>' +
       '<div class="hint">The passcode is a light lock on the screen, not strong encryption.</div>' +
-      '<div class="hint">Sync: ' + (serverMode ? 'connected to server.py — both of you share the same data.' : 'this browser only. Run server.py to share between two phones.') + '</div>' +
+      '<div class="hint">Sync: ' + (cloudReady ? 'connected to Supabase — both devices share the same universe.' : 'local cache + Supabase auto-sync.') + '</div>' +
       '<div class="row"><button type="button" class="btn" data-export>Export backup</button><label class="btn" style="cursor:pointer">Import<input type="file" accept="application/json" data-import hidden></label>' +
       (st.lock ? '<button type="button" class="btn" data-lock>Lock now</button>' : '') +
       '<span class="grow"></span><button class="btn primary" type="submit">Save</button></div></form>', function (m) {
@@ -803,7 +853,7 @@ body.explore .freehint{opacity:0}
         state.settings.me = String(fd.get('me') || '').trim() || 'Me';
         state.settings.you = String(fd.get('you') || '').trim() || 'You';
         var p = String(fd.get('pass') || '');
-        if (p) { state.settings.lock = hash(p); ss('set',state.settings.lock); }
+        if (p) { state.settings.lock = hash(p); ss('set', state.settings.lock); }
         save(); closeModal(); render(); toast('Saved ✦');
       };
       m.querySelector('[data-export]').onclick = function () {
@@ -822,7 +872,6 @@ body.explore .freehint{opacity:0}
     });
   }
 
-  /* ---------------- events ---------------- */
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-go],[data-add],[data-open],[data-filter],[data-write],[data-x]'); if (!t) return;
     if (t.hasAttribute('data-write')) openWrite();
@@ -857,9 +906,8 @@ body.explore .freehint{opacity:0}
 
   view = (location.hash.slice(1) in SECTIONS) ? location.hash.slice(1) : 'home';
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-  render(); checkLock(); initServer();
+  render(); checkLock(); initCloud();
 })();
-
 </script>
 </body>
 </html>
